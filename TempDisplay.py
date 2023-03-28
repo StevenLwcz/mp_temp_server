@@ -22,7 +22,7 @@ OLED_TIME_H = const(7)
 OLED_WLAN_X = const(119)
 OLED_WLAN_Y = const(0)
 OLED_WLAN_H = const(8)
-OLED_WLAN_W = const(8)
+OLED_WLAN_W = const(9)
 
 OLED_TEMP_X = const(0)
 OLED_TEMP_Y = const(8)
@@ -67,9 +67,11 @@ class TempDisplay(object):
         else:
             self.rssi = None
        
+        signal_level += 1
         print(f'Signal level {signal_level}')
         self.display.fill_rect(OLED_WLAN_X, OLED_WLAN_Y, OLED_WLAN_W, OLED_WLAN_H, 0)
-        self.display.fill_rect(OLED_WLAN_X, OLED_WLAN_Y, OLED_WLAN_W, signal_level, 1)
+        for i in range(signal_level):
+            self.display.vline(OLED_WLAN_X + i, 8 - i, i, 1)
         self.display.fill_rect(OLED_IP_X, OLED_IP_Y, OLED_IP_W, OLED_IP_H, 0)
         self.display.text(self.ip, OLED_IP_X, OLED_IP_Y)
         self.display.show()
@@ -79,7 +81,7 @@ class TempDisplay(object):
         lt = time.localtime()
         self.display.fill_rect(OLED_TIME_X, OLED_TIME_Y, OLED_TIME_W, OLED_TIME_H, 0)
         self.display.text(f"{lt[3]:02}:{lt[4]:02}", OLED_TIME_X, OLED_TIME_Y, 1)
-        self.display.hline(OLED_TIME_X, OLED_TIME_H, OLED_WIDTH, 1)
+        # self.display.hline(OLED_TIME_X, OLED_TIME_H, OLED_WIDTH, 1)
         self.display.show()
 
     def temperature(self, temp):
