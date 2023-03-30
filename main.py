@@ -6,9 +6,10 @@ import utime as time
 from uasyncio import StreamReader, StreamWriter
 import ujson as json
 import gc
-from machine import Pin
+from machine import Pin, I2C
 from wlanc import ssid, password
 from TempDisplay import TempDisplay
+import bme280_float as bme280
 
 WAIT_TEMP = const(30) # 30 seconds for testing will be 10 to 15 min 
 WAIT_LOOP = const(10) # 10 seconds for testing will be longer later
@@ -24,6 +25,7 @@ wlan.connect(ssid, password)
 ntptime.settime()
 #TODO adjust for BST
 
+# TODO send connection info to oled
 max_wait = 10
 while max_wait > 0:
     if wlan.status() < 0 or wlan.status() >= 3:
@@ -42,7 +44,12 @@ else:
 sensor_temp = machine.ADC(4)
 conversion_factor = const(5.035477e-05) # 3.3 / (65535)
 
+# TODO send connection info to oled
 tempDisplay = TempDisplay(wlan, ssid)
+
+i2c = machine.I2C(0, sda=machine.Pin(0), scl=machine.Pin(1))
+bme = bme280.BME280(i2c=i2c)
+print(bme.values)
 
 templist = []
 
@@ -54,7 +61,9 @@ async def readtemp():
         temperature = 27 - (reading - 0.706)/0.001721
         templist.append((time.mktime(time.localtime()), temperature))
         tempDisplay.temperature(temperature)
-        # print(sensor, temperature)
+        bme = bme280.BME280(i2c=i2c)
+        print(bme.values)
+        print(sensor, temperature)
 
 async def temp_server(reader: StreamReader, writer: StreamWriter):
     print('New connection. with json')
