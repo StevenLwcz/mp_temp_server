@@ -12,9 +12,8 @@ struct ServerData(Vec<SensorData>);
 fn main() {
     println!("GETTEMP....");
     println!("Connecting....");
-    let mut stream = TcpStream::connect("127.0.0.1:65510")
-    // let mut stream = TcpStream::connect("192.168.43.169:65510")
-    // let mut stream = TcpStream::connect("192.168.43.149:65510")
+    // TODO: accecp IP address and port from command line or other config
+    let mut stream = TcpStream::connect("xx.yy.zz.ww:pp")
                                .expect("Could not connect to server");
     let cmd = "GETTEMP\n";
     println!("Sending command....");
