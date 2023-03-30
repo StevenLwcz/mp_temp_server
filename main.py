@@ -59,10 +59,12 @@ async def readtemp():
         sensor = sensor_temp.read_u16()
         reading = sensor * conversion_factor 
         temperature = 27 - (reading - 0.706)/0.001721
-        templist.append((time.mktime(time.localtime()), temperature))
-        tempDisplay.temperature(temperature)
+        # templist.append((time.mktime(time.localtime()), temperature))
+        # tempDisplay.temperature(temperature)
         bme = bme280.BME280(i2c=i2c)
+        tempDisplay.env_data(bme.values)
         print(bme.values)
+        templist.append((time.mktime(time.localtime()), bme.values))
         print(sensor, temperature)
 
 async def temp_server(reader: StreamReader, writer: StreamWriter):

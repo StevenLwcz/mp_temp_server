@@ -34,6 +34,11 @@ OLED_IP_Y = const(24)
 OLED_IP_H = const(7)
 OLED_IP_W = const(128)
 
+OLED_ENV_X = const(0)
+OLED_ENV_Y = const(8)
+OLED_ENV_H = const(24)
+OLED_ENV_W = const(128)
+
 class TempDisplay(object):
 
     display = None
@@ -88,3 +93,9 @@ class TempDisplay(object):
         self.display.fill_rect(OLED_TEMP_X, OLED_TEMP_Y, OLED_TEMP_W, OLED_TEMP_H, 0)
         self.display.text(str(temp), OLED_TEMP_X, OLED_TEMP_Y)
         self.display.show()
+
+    def env_data(self, data):
+        self.display.fill_rec(OLED_ENV_X, OLED_ENV_Y, OLED_ENV_W, OLED_ENV_H, 0)
+        self.display.fill_rec(data[0], OLED_ENV_X, OLED_ENV_Y)
+        self.display.fill_rec(data[1], OLED_ENV_X, OLED_ENV_Y + 8)
+        self.display.fill_rec(data[2], OLED_ENV_X, OLED_ENV_Y + 16)
