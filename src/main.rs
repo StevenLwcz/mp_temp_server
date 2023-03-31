@@ -2,21 +2,27 @@ use std::net::TcpStream;
 use std::str;
 use std::io::{BufRead, BufReader, Write};
 use serde::{Deserialize, Serialize};
+use std::env;
 
 #[derive(Debug, Deserialize, Serialize)]
-struct SensorData(u32, f32);
+struct SensorData(u32, (String, String, String));
 
 #[derive(Debug, Deserialize, Serialize)]
 struct ServerData(Vec<SensorData>);
 
 fn main() {
-    println!("GETTEMP....");
+    let args: Vec<String> = env::args().collect();
+    if args.len() == 1 {
+        println!("Add ip address and port to the command line  aa:bb:cc:dd:pp");
+        std::process::exit(0);
+    }
+    let address = &args[1];
+
     println!("Connecting....");
-    // TODO: accecp IP address and port from command line or other config
-    let mut stream = TcpStream::connect("xx.yy.zz.ww:pp")
+    let mut stream = TcpStream::connect(address)
                                .expect("Could not connect to server");
     let cmd = "GETTEMP\n";
-    println!("Sending command....");
+    println!("Sending command {cmd} ....");
     stream.write(cmd.as_bytes()).expect("Failed to write to server");
 
     let mut reader = BufReader::new(&stream);
