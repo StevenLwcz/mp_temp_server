@@ -9,12 +9,12 @@ Work in progress...
 
 ### Used by this project:
 
-bme280_float.py from https://github.com/robert-hh/BME280.git
-ssd1306.py from https://github.com/stlehmann/micropython-ssd1306.git
+    bme280_float.py from https://github.com/robert-hh/BME280.git
+    ssd1306.py from https://github.com/stlehmann/micropython-ssd1306.git
  
 ### TODO
 
-# Make sure long runing server does not run out of memory
-# Various tidy ups/refinements
-# Improve client
-# Provide Python client version
+1. Make sure long runing server does not run out of memory
+1. Various tidy ups/refinements
+1. Improve client
+1. Provide Python client version
