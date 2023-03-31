@@ -48,11 +48,14 @@ class TempDisplay(object):
     ssid = None
     wlan = None
 
-    def __init__(self, wlan, ssid):
+    def __init__(self, ssid):
         self.ssid = ssid
-        self.wlan = wlan
         self.i2c = I2C(0, sda=Pin(0), scl=Pin(1))
+        print(self.i2c.scan())
         self.display = ssd1306.SSD1306_I2C(OLED_WIDTH, OLED_HEIGHT, self.i2c)
+       
+    def setWlan(self, wlan):
+        self.wlan = wlan
         self.ip = wlan.ifconfig()[0]
 
     def wlan_status(self):
@@ -77,8 +80,8 @@ class TempDisplay(object):
         self.display.fill_rect(OLED_WLAN_X, OLED_WLAN_Y, OLED_WLAN_W, OLED_WLAN_H, 0)
         for i in range(signal_level):
             self.display.vline(OLED_WLAN_X + i, 8 - i, i, 1)
-        self.display.fill_rect(OLED_IP_X, OLED_IP_Y, OLED_IP_W, OLED_IP_H, 0)
-        self.display.text(self.ip, OLED_IP_X, OLED_IP_Y)
+        # self.display.fill_rect(OLED_IP_X, OLED_IP_Y, OLED_IP_W, OLED_IP_H, 0)
+        # self.display.text(self.ip, OLED_IP_X, OLED_IP_Y)
         self.display.show()
 
     def time_date(self):
@@ -99,3 +102,7 @@ class TempDisplay(object):
         self.display.text(str(data[0]), OLED_ENV_X, OLED_ENV_Y)
         self.display.text(str(data[1]), OLED_ENV_X, OLED_ENV_Y + 8)
         self.display.text(str(data[2]), OLED_ENV_X, OLED_ENV_Y + 16)
+        
+    def text(self, txt):
+        self.display.fill_rect(0, 0, OLED_WIDTH, OLED_HEIGHT, 0)
+        self.display.text(txt, 0, 0)

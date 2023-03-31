@@ -17,6 +17,10 @@ WAIT_LOOP = const(10) # 10 seconds for testing will be longer later
 led = Pin(15, Pin.OUT)
 onboard = Pin("LED", Pin.OUT, value=0)
 
+tempDisplay = TempDisplay(ssid)
+
+tempDisplay.text("Connecting to {ssid}")
+
 wlan = network.WLAN(network.STA_IF)
 wlan.active(True)
 wlan.connect(ssid, password)
@@ -31,7 +35,8 @@ while max_wait > 0:
     if wlan.status() < 0 or wlan.status() >= 3:
         break
     max_wait -= 1
-    print("waiting for connection...")
+    print("Waiting for connection...")
+    tempDisplay.text("Waiting {ssid} {max_wait}")
     time.sleep(1)
 
 if wlan.status() != 3:
@@ -41,15 +46,13 @@ else:
     status = wlan.ifconfig()
     print('ip = ' + status[0])
 
-sensor_temp = machine.ADC(4)
-conversion_factor = const(5.035477e-05) # 3.3 / (65535)
+tempDisplay.setWlan(wlan)
 
-# TODO send connection info to oled
-tempDisplay = TempDisplay(wlan, ssid)
+# sensor_temp = machine.ADC(4)
+# conversion_factor = const(5.035477e-05) # 3.3 / (65535)
 
-i2c = machine.I2C(0, sda=machine.Pin(0), scl=machine.Pin(1))
-print(i2c.scan())
-bme = bme280.BME280(i2c=i2c)
+# Assume OLED and BME280 will share the same i2c pins
+bme = bme280.BME280(i2c=tempDisplay.i2c)
 print(bme.values)
 
 templist = []
