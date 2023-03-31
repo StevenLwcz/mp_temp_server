@@ -12,22 +12,18 @@ from TempDisplay import TempDisplay
 import bme280_float as bme280
 
 WAIT_TEMP = const(30) # 30 seconds for testing will be 10 to 15 min 
-WAIT_LOOP = const(10) # 10 seconds for testing will be longer later
+WAIT_LOOP = const(20) # 10 seconds for testing will be longer later
 
 led = Pin(15, Pin.OUT)
 onboard = Pin("LED", Pin.OUT, value=0)
 
 tempDisplay = TempDisplay(ssid)
 
-tempDisplay.text("WLAN: {ssid}")
+tempDisplay.text(f"WLAN: {ssid}")
 
 wlan = network.WLAN(network.STA_IF)
 wlan.active(True)
 wlan.connect(ssid, password)
-
-#TODO catch time out exception
-ntptime.settime()
-#TODO adjust for BST
 
 # TODO send connection info to oled
 max_wait = 10
@@ -48,6 +44,11 @@ else:
     print('ip = ' + status[0])
 
 tempDisplay.setWlan(wlan)
+
+#TODO catch time out exception
+ntptime.settime()
+#TODO adjust for BST
+
 
 # sensor_temp = machine.ADC(4)
 # conversion_factor = const(5.035477e-05) # 3.3 / (65535)

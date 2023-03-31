@@ -59,6 +59,7 @@ class TempDisplay(object):
         self.ip = wlan.ifconfig()[0]
         self.display.fill_rect(OLED_IP_X, OLED_IP_Y, OLED_IP_W, OLED_IP_H, 0)
         self.display.text(self.ip, OLED_IP_X, OLED_IP_Y)
+        self.display.show()
         
     def wlan_status(self):
         signal_level = 0
@@ -103,7 +104,9 @@ class TempDisplay(object):
         self.display.text(str(data[0]), OLED_ENV_X, OLED_ENV_Y)
         self.display.text(str(data[1]), OLED_ENV_X, OLED_ENV_Y + 8)
         self.display.text(str(data[2]), OLED_ENV_X, OLED_ENV_Y + 16)
+        self.display.show()
         
     def text(self, txt):
-        self.display.fill_rect(0, 0, OLED_WIDTH, OLED_HEIGHT, 0)
+        self.display.fill(0)
         self.display.text(txt, 0, 0)
+        self.display.show()
