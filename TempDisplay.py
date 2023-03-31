@@ -95,7 +95,7 @@ class TempDisplay(object):
         self.display.show()
 
     def env_data(self, data):
-        self.display.fill_rec(OLED_ENV_X, OLED_ENV_Y, OLED_ENV_W, OLED_ENV_H, 0)
-        self.display.fill_rec(data[0], OLED_ENV_X, OLED_ENV_Y)
-        self.display.fill_rec(data[1], OLED_ENV_X, OLED_ENV_Y + 8)
-        self.display.fill_rec(data[2], OLED_ENV_X, OLED_ENV_Y + 16)
+        self.display.fill_rect(OLED_ENV_X, OLED_ENV_Y, OLED_ENV_W, OLED_ENV_H, 0)
+        self.display.text(str(data[0]), OLED_ENV_X, OLED_ENV_Y)
+        self.display.text(str(data[1]), OLED_ENV_X, OLED_ENV_Y + 8)
+        self.display.text(str(data[2]), OLED_ENV_X, OLED_ENV_Y + 16)

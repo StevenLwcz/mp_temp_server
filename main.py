@@ -48,6 +48,7 @@ conversion_factor = const(5.035477e-05) # 3.3 / (65535)
 tempDisplay = TempDisplay(wlan, ssid)
 
 i2c = machine.I2C(0, sda=machine.Pin(0), scl=machine.Pin(1))
+print(i2c.scan())
 bme = bme280.BME280(i2c=i2c)
 print(bme.values)
 
@@ -56,16 +57,16 @@ templist = []
 async def readtemp():
     while True:
         await asyncio.sleep(WAIT_TEMP)
-        sensor = sensor_temp.read_u16()
-        reading = sensor * conversion_factor 
-        temperature = 27 - (reading - 0.706)/0.001721
+        # sensor = sensor_temp.read_u16()
+        # reading = sensor * conversion_factor 
+        # temperature = 27 - (reading - 0.706)/0.001721
         # templist.append((time.mktime(time.localtime()), temperature))
         # tempDisplay.temperature(temperature)
         bme = bme280.BME280(i2c=i2c)
         tempDisplay.env_data(bme.values)
         print(bme.values)
         templist.append((time.mktime(time.localtime()), bme.values))
-        print(sensor, temperature)
+        # print(sensor, temperature)
 
 async def temp_server(reader: StreamReader, writer: StreamWriter):
     print('New connection. with json')
