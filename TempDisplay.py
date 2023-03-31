@@ -57,7 +57,9 @@ class TempDisplay(object):
     def setWlan(self, wlan):
         self.wlan = wlan
         self.ip = wlan.ifconfig()[0]
-
+        self.display.fill_rect(OLED_IP_X, OLED_IP_Y, OLED_IP_W, OLED_IP_H, 0)
+        self.display.text(self.ip, OLED_IP_X, OLED_IP_Y)
+        
     def wlan_status(self):
         signal_level = 0
         if self.wlan.status() == 3:
@@ -69,7 +71,7 @@ class TempDisplay(object):
                 if wl == []:
                     signal_level = 8
                 else:
-                    print("wl", wl)
+                    # print("wl", wl)
                     self.rssi = [x[3] for x in wl if x[0] == self.ssid.encode()][0]
                     signal_level = (self.rssi + 100) * 2 // 25
         else:
@@ -80,8 +82,7 @@ class TempDisplay(object):
         self.display.fill_rect(OLED_WLAN_X, OLED_WLAN_Y, OLED_WLAN_W, OLED_WLAN_H, 0)
         for i in range(signal_level):
             self.display.vline(OLED_WLAN_X + i, 8 - i, i, 1)
-        # self.display.fill_rect(OLED_IP_X, OLED_IP_Y, OLED_IP_W, OLED_IP_H, 0)
-        # self.display.text(self.ip, OLED_IP_X, OLED_IP_Y)
+
         self.display.show()
 
     def time_date(self):

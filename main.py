@@ -19,7 +19,7 @@ onboard = Pin("LED", Pin.OUT, value=0)
 
 tempDisplay = TempDisplay(ssid)
 
-tempDisplay.text("Connecting to {ssid}")
+tempDisplay.text("WLAN: {ssid}")
 
 wlan = network.WLAN(network.STA_IF)
 wlan.active(True)
@@ -36,10 +36,11 @@ while max_wait > 0:
         break
     max_wait -= 1
     print("Waiting for connection...")
-    tempDisplay.text("Waiting {ssid} {max_wait}")
     time.sleep(1)
+    tempDisplay.text("Waiting {ssid} {max_wait}")
 
 if wlan.status() != 3:
+    tempDisplay.text("Failed to connect")
     raise RuntimeError("network connection failed")
 else:
     print('connected')
@@ -65,7 +66,7 @@ async def readtemp():
         # temperature = 27 - (reading - 0.706)/0.001721
         # templist.append((time.mktime(time.localtime()), temperature))
         # tempDisplay.temperature(temperature)
-        bme = bme280.BME280(i2c=i2c)
+        bme = bme280.BME280(i2c=tempDisplay.i2c)
         tempDisplay.env_data(bme.values)
         print(bme.values)
         templist.append((time.mktime(time.localtime()), bme.values))
@@ -92,8 +93,7 @@ async def main(host='0.0.0.0', port=65510):
     while True:
         onboard.on()
         lt = time.localtime()
-        print(f"Time: {lt[3]}:{lt[4]}:{lt[5]}")
-        print(f"Len: {len(templist)}")
+        print(f"Time: {lt[3]}:{lt[4]}:{lt[5]} {len(templist)}")
         print(f"Alloc: {gc.mem_alloc() / 1024}  Free: {gc.mem_free() / 1024}")
         print(f"Wlan: {wlan.status()}")
         # update oled with status ?
