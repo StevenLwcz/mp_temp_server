@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 use std::env;
 
 #[derive(Debug, Deserialize, Serialize)]
-struct SensorData(u32, (String, String, String));
+struct SensorData(u32, (f32, f32, f32));
 
 #[derive(Debug, Deserialize, Serialize)]
 struct ServerData(Vec<SensorData>);
