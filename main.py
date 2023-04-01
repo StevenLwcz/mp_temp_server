@@ -71,7 +71,7 @@ async def readtemp():
         bme.read_compensated_data(result)
         tempDisplay.env_data(result)
         print(result)
-        templist.append((time.mktime(time.localtime()), bme.values))
+        templist.append((time.mktime(time.localtime()), result))
         # print(sensor, temperature)
 
 async def temp_server(reader: StreamReader, writer: StreamWriter):
