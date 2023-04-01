@@ -11,8 +11,8 @@ from wlanc import ssid, password
 from TempDisplay import TempDisplay
 import bme280_float as bme280
 
-WAIT_TEMP = const(30) # 30 seconds for testing will be 10 to 15 min 
-WAIT_LOOP = const(20) # 10 seconds for testing will be longer later
+WAIT_TEMP = const(10) # 30 seconds for testing will be 10 to 15 min 
+WAIT_LOOP = const(10) # 10 seconds for testing will be longer later
 
 led = Pin(15, Pin.OUT)
 onboard = Pin("LED", Pin.OUT, value=0)
@@ -67,9 +67,10 @@ async def readtemp():
         # temperature = 27 - (reading - 0.706)/0.001721
         # templist.append((time.mktime(time.localtime()), temperature))
         # tempDisplay.temperature(temperature)
-        bme = bme280.BME280(i2c=tempDisplay.i2c)
-        tempDisplay.env_data(bme.values)
-        print(bme.values)
+        result = [0.0, 0.0, 0.0]
+        bme.read_compensated_data(result)
+        tempDisplay.env_data(result)
+        print(result)
         templist.append((time.mktime(time.localtime()), bme.values))
         # print(sensor, temperature)
 
