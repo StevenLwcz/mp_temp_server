@@ -11,8 +11,8 @@ from wlanc import ssid, password
 from TempDisplay import TempDisplay
 import bme280_float as bme280
 
-WAIT_TEMP = const(900) # 30 seconds for testing will be 10 to 15 min 
-WAIT_LOOP = const(900) # 10 seconds for testing will be longer later
+WAIT_TEMP = const(300) # 30 seconds for testing will be 10 to 15 min 
+WAIT_LOOP = const(600) # 10 seconds for testing will be longer later
 
 led = Pin(15, Pin.OUT)
 onboard = Pin("LED", Pin.OUT, value=0)
@@ -66,6 +66,15 @@ async def readtemp():
         print(result)
         templist.append((time.mktime(time.localtime()), result))
         await asyncio.sleep(WAIT_TEMP)
+        
+async def update_time():
+    while True:
+        lt = time.localtime()
+        sec = lt[5]
+        print(f"Time: {lt[3]:02}:{lt[4]:02}:{lt[5]:02} Len: {len(templist)}")
+        tempDisplay.time_date()
+        tempDisplay.wlan_update_status()
+        await asyncio.sleep(60 - sec)
 
 async def temp_server(reader: StreamReader, writer: StreamWriter):
     print('New connection. with json')
@@ -85,20 +94,22 @@ async def temp_server(reader: StreamReader, writer: StreamWriter):
 async def main(host='0.0.0.0', port=65510):
     asyncio.create_task(asyncio.start_server(temp_server, host, port))
     asyncio.create_task(readtemp())
+    asyncio.create_task(update_time())
     while True:
         onboard.on()
         await asyncio.sleep(0.25)
-        tempDisplay.time_date()
-        tempDisplay.wlan_status()
+       
         free = gc.mem_free() / 1024
-        print(free)
+        print(f"Alloc: {gc.mem_alloc() / 1024}  Free: {free}")
+        if free < 100:
+            gc.collect()
         onboard.off()
         await asyncio.sleep(WAIT_LOOP)
 
 try:
     asyncio.run(main())
 except KeyboardInterrupt:
-    print('Bye!')
+    print('CTRL-C Pressed')
 finally:
     print("finally")
     asyncio.new_event_loop()
