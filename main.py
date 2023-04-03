@@ -11,8 +11,8 @@ from wlanc import ssid, password
 from TempDisplay import TempDisplay
 import bme280_float as bme280
 
-WAIT_TEMP = const(10) # 30 seconds for testing will be 10 to 15 min 
-WAIT_LOOP = const(10) # 10 seconds for testing will be longer later
+WAIT_TEMP = const(900) # 30 seconds for testing will be 10 to 15 min 
+WAIT_LOOP = const(900) # 10 seconds for testing will be longer later
 
 led = Pin(15, Pin.OUT)
 onboard = Pin("LED", Pin.OUT, value=0)
@@ -46,12 +46,11 @@ else:
 tempDisplay.setWlan(wlan)
 
 #TODO catch time out exception
-ntptime.settime()
+try:
+    ntptime.settime()
+except OSError:
+    ntptime.settime()
 #TODO adjust for BST
-
-
-# sensor_temp = machine.ADC(4)
-# conversion_factor = const(5.035477e-05) # 3.3 / (65535)
 
 # Assume OLED and BME280 will share the same i2c pins
 bme = bme280.BME280(i2c=tempDisplay.i2c)
@@ -61,18 +60,12 @@ templist = []
 
 async def readtemp():
     while True:
-        await asyncio.sleep(WAIT_TEMP)
-        # sensor = sensor_temp.read_u16()
-        # reading = sensor * conversion_factor 
-        # temperature = 27 - (reading - 0.706)/0.001721
-        # templist.append((time.mktime(time.localtime()), temperature))
-        # tempDisplay.temperature(temperature)
-        result = [0.0, 0.0, 0.0]
+        result = [None, None, None]
         bme.read_compensated_data(result)
         tempDisplay.env_data(result)
         print(result)
         templist.append((time.mktime(time.localtime()), result))
-        # print(sensor, temperature)
+        await asyncio.sleep(WAIT_TEMP)
 
 async def temp_server(reader: StreamReader, writer: StreamWriter):
     print('New connection. with json')
@@ -94,14 +87,11 @@ async def main(host='0.0.0.0', port=65510):
     asyncio.create_task(readtemp())
     while True:
         onboard.on()
-        lt = time.localtime()
-        print(f"Time: {lt[3]}:{lt[4]}:{lt[5]} {len(templist)}")
-        print(f"Alloc: {gc.mem_alloc() / 1024}  Free: {gc.mem_free() / 1024}")
-        print(f"Wlan: {wlan.status()}")
-        # update oled with status ?
+        await asyncio.sleep(0.25)
         tempDisplay.time_date()
         tempDisplay.wlan_status()
-        await asyncio.sleep(0.25)
+        free = gc.mem_free() / 1024
+        print(free)
         onboard.off()
         await asyncio.sleep(WAIT_LOOP)
 

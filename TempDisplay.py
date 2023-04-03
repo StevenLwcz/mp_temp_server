@@ -77,11 +77,9 @@ class TempDisplay(object):
                     signal_level = (self.rssi + 100) * 2 // 25
         else:
             self.rssi = None
-       
-        signal_level += 1
-        print(f'Signal level {signal_level}')
+
         self.display.fill_rect(OLED_WLAN_X, OLED_WLAN_Y, OLED_WLAN_W, OLED_WLAN_H, 0)
-        for i in range(signal_level):
+        for i in range(signal_level + 1):
             self.display.vline(OLED_WLAN_X + i, 8 - i, i, 1)
 
         self.display.show()
