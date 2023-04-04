@@ -101,7 +101,7 @@ async def main(host='0.0.0.0', port=65510):
        
         free = gc.mem_free() / 1024
         print(f"Alloc: {gc.mem_alloc() / 1024}  Free: {free}")
-        if free < 100:
+        if free < 80:
             gc.collect()
         onboard.off()
         await asyncio.sleep(WAIT_LOOP)
