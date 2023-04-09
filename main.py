@@ -14,8 +14,8 @@ import micropython
 
 OLED_MAX_Y = const(31)
 
-WAIT_TEMP = const(60) # 5 mins 
-WAIT_LOOP = const(60) # 5 mins
+WAIT_TEMP = const(300) # 5 mins 
+WAIT_LOOP = const(300) # 5 mins
 
 led = Pin(15, Pin.OUT)
 onboard = Pin("LED", Pin.OUT, value=0)
@@ -76,7 +76,7 @@ async def update_time():
         sec = lt[5]
         print(f"Time: {lt[3]:02}:{lt[4]:02}:{lt[5]:02} Len: {len(templist)}")
         tempDisplay.time_date()
-       # tempDisplay.wlan_update_status()
+        tempDisplay.wlan_update_status()
         await asyncio.sleep(60 - sec)
 
 async def temp_server(reader: StreamReader, writer: StreamWriter):

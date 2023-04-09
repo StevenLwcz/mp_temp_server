@@ -11,7 +11,7 @@ mon = ["Ja", "Fe", "Ma", "Ap", "Ju", "Jl", "Au", "Se", "Oc", "No", "De"]
 
 # 16 x 4 characters
 # ----------|------
-# HH:MM DD dd MM YY      
+# HH:MM DD dd MM YY W     
 # temp      |      
 # 10123.4hPa| graphs   
 # humidity  |    
@@ -19,13 +19,13 @@ mon = ["Ja", "Fe", "Ma", "Ap", "Ju", "Jl", "Au", "Se", "Oc", "No", "De"]
 
 OLED_TIME_X = const(0)
 OLED_TIME_Y = const(0)
-OLED_TIME_W = const(128)
+OLED_TIME_W = const(120)
 OLED_TIME_H = const(8)
 
-OLED_WLAN_X = const(112)
-OLED_WLAN_Y = const(16)
-OLED_WLAN_H = const(16)
-OLED_WLAN_W = const(16)
+OLED_WLAN_X = const(120)
+OLED_WLAN_Y = const(0)
+OLED_WLAN_H = const(8)
+OLED_WLAN_W = const(8)
 
 OLED_IP_X = const(0)
 OLED_IP_Y = const(24)
@@ -36,6 +36,20 @@ OLED_ENV_X = const(0)
 OLED_ENV_Y = const(8)
 OLED_ENV_H = const(24)
 OLED_ENV_W = const(80)
+
+def get_signal_level(rssi):
+    if not rssi:
+        return 0
+    signal_level = rssi + 100
+    if signal_level == 0:
+        return 0
+    if signal_level <= 25:
+        return 2
+    if signal_level <= 50:
+        return 4
+    if signal_level <= 75:
+        return 6
+    return 8    
 
 class TempDisplay(object):
 
@@ -60,25 +74,22 @@ class TempDisplay(object):
         self.display.show()
         
     def wlan_update_status(self):
-        signal_level = 0
         if self.wlan.status() == 3:
-            if self.rssi:
-                 signal_level = (self.rssi + 100) * 16 // 100
-            else:
-                print(f"Scanning for {self.ssid}")
+            if not self.rssi:
+                print(f'Scanning for {self.ssid}')
                 wl = self.wlan.scan() # only get resieved signal level once because it takes time
-                if wl == []:
-                    signal_level = OLED_WLAN_H
-                else:
+                if wl != []:
                     self.rssi = [x[3] for x in wl if x[0] == self.ssid.encode()][0]
-                    signal_level = (self.rssi + 100) * 2 // 25
+                    print(f'rssi: {self.rssi}')
         else:
             self.rssi = None
-
-        print(f'Signal level: {signal_level} Wlan: {self.wlan.status()}')
+            print(f'Wlan status {self.wlan.status()}')
+            
+        signal_level = get_signal_level(self.rssi)
         self.display.fill_rect(OLED_WLAN_X, OLED_WLAN_Y, OLED_WLAN_W, OLED_WLAN_H, 0)
-        for i in range(signal_level + 1):
-            self.display.vline(OLED_WLAN_X + i, OLED_WLAN_Y + OLED_WLAN_H - i, i, 1)
+        y = OLED_WLAN_Y + OLED_WLAN_H - 1
+        for i in range(signal_level):
+            self.display.vline(OLED_WLAN_X + i, y - i, i + 1, 1)
 
         self.display.show()
 
