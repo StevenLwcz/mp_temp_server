@@ -13,8 +13,8 @@ mon = ["Ja", "Fe", "Ma", "Ap", "Ju", "Jl", "Au", "Se", "Oc", "No", "De"]
 # ----------|------
 # HH:MM DD dd MM YY      
 # temp      |      
-# 10123.4hPa|    WW
-# humidity  |    WW
+# 10123.4hPa| graphs   
+# humidity  |    
 # ----------|------
 
 OLED_TIME_X = const(0)
@@ -101,7 +101,7 @@ class TempDisplay(object):
     def env_data(self, data):
         self.display.fill_rect(OLED_ENV_X, OLED_ENV_Y, OLED_ENV_W, OLED_ENV_H, 0)
         self.display.text(f'{data[0]:.1f}C', OLED_ENV_X, OLED_ENV_Y)
-        self.display.text(f'{data[1]:.1f}Pa', OLED_ENV_X, OLED_ENV_Y + 8)
+        self.display.text(f'{data[1]:.1f}P', OLED_ENV_X, OLED_ENV_Y + 8)
         self.display.text(f'{data[2]:.2f}%', OLED_ENV_X, OLED_ENV_Y + 16)
         self.display.show()
         

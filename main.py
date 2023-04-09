@@ -14,8 +14,8 @@ import micropython
 
 OLED_MAX_Y = const(31)
 
-WAIT_TEMP = const(300) # 5 mins 
-WAIT_LOOP = const(300) # 5 mins
+WAIT_TEMP = const(60) # 5 mins 
+WAIT_LOOP = const(60) # 5 mins
 
 led = Pin(15, Pin.OUT)
 onboard = Pin("LED", Pin.OUT, value=0)
@@ -96,46 +96,91 @@ async def temp_server(reader: StreamReader, writer: StreamWriter):
 def get_temp(data):
     return data[1][0]
 
-# Fit temp range into 24 pixels height
+def get_press(data):
+    return data[1][1]
+
+def get_humid(data):
+    return data[1][2]
+
+# Fit temp range into 10 pixels height
 def graph_scale(min, max):
     diff = max - min
-    if diff <= 0.2875:
-        return 80
-    if diff <= 0.575:
-        return 40
-    if diff <= 1.15:
+    if diff <= 0.5:
         return 20
-    if diff <= 2.3:
+    if diff <= 1:
         return 10
-    if diff <= 4.6:
+    if diff <= 2:
         return 5
-    if diff<= 9.2:
-        return 2.5
-    if diff <= 18.4:
-        return 1.25
-    if diff <= 23:
+    if diff <= 5:
+        return 2
+    if diff <= 10:
         return 1
-    if diff <= 62:
+    if diff <= 20:
         return 0.5
-    return 0.25
+    if diff <= 50:
+        return 0.2
+    if diff <= 100:
+        return 0.1
+    return 10 / diff
 
 def display_temp_graph():
-    min_temp = get_temp(min(templist, key=get_temp, default=0))
-    max_temp = get_temp(max(templist, key=get_temp, default=0))
+    length = -48 if len(templist) >= 48 else 0
+    values = templist[length:]
+    min_temp = get_temp(min(values, key=get_temp, default=0))
+    max_temp = get_temp(max(values, key=get_temp, default=0))
     scale = graph_scale(min_temp, max_temp)
     x = 80
-    length = -48 if len(templist) >= 48 else 0
     print("Graph ", min_temp, max_temp, len(templist), scale)
     tempDisplay.display.fill_rect(80, 8, 48, 24, 0)
-    for data in templist[length:]:
-        y = OLED_MAX_Y - int((get_temp(data) - min_temp) * scale)
+    tempDisplay.display.hline(80, 20, 48, 1)
+    for data in values:
+        y = 18 - int((get_temp(data) - min_temp) * scale)
         print(y, end=' ')
         tempDisplay.display.pixel(x, y, 1)
         x += 1
         
     print("")
     tempDisplay.display.show()
+    
+def display_pressure_graph():
+    length = -22 if len(templist) >= 22 else 0
+    values = templist[length:]
+    min_press = get_press(min(values, key=get_press, default=0))
+    max_press = get_press(max(values, key=get_press, default=0))
+    scale = graph_scale(min_press, max_press)
+    x = 80
+    print("Graph ", min_press, max_press, len(templist), scale)
+    # tempDisplay.display.fill_rect(80, 8, 48, 24, 0)
+    # tempDisplay.display.rect(80, 20, 24, 12, 1)
+    tempDisplay.display.vline(104, 20, 12, 1)
+    for data in values:
+        y = 31 - int((get_press(data) - min_press) * scale)
+        print(y, end=' ')
+        tempDisplay.display.pixel(x, y, 1)
+        x += 1
         
+    print("")
+    tempDisplay.display.show()
+    
+def display_humidity_graph():
+    length = -22 if len(templist) >= 22 else 0
+    values = templist[length:]
+    min_value = get_humid(min(values, key=get_humid, default=0))
+    max_value = get_humid(max(values, key=get_humid, default=0))
+    scale = graph_scale(min_value, max_value)
+    x = 106
+    print("Graph ", min_value, max_value, len(templist), scale)
+    # tempDisplay.display.fill_rect(80, 8, 48, 24, 0)
+   # tempDisplay.display.rect(80, 20, 24, 12, 1)
+    for data in templist[length:]:
+        y = 31 - int((get_humid(data) - min_value) * scale)
+        print(y, end=' ')
+        tempDisplay.display.pixel(x, y, 1)
+        x += 1
+        
+    print("")
+    tempDisplay.display.show()
+            
 async def main(host='0.0.0.0', port=65510):
     asyncio.create_task(asyncio.start_server(temp_server, host, port))
     asyncio.create_task(readtemp())
@@ -152,6 +197,8 @@ async def main(host='0.0.0.0', port=65510):
 
         onboard.off()
         display_temp_graph()
+        display_pressure_graph()
+        display_humidity_graph()
         await asyncio.sleep(WAIT_LOOP)
 
 try:
