@@ -103,10 +103,10 @@ class TempDisplay(object):
         
         self.display.fill_rect(OLED_TIME_X, OLED_TIME_Y, OLED_TIME_W, OLED_TIME_H, 0)
         self.display.text(ti, OLED_TIME_X, OLED_TIME_Y, 1)
-        self.display.text(d1, OLED_TIME_X + 44, OLED_TIME_Y, 1)
-        self.display.text(d2, OLED_TIME_X + 64, OLED_TIME_Y, 1)
-        self.display.text(mo, OLED_TIME_X + 84, OLED_TIME_Y, 1)
-        self.display.text(ye, OLED_TIME_X + 104, OLED_TIME_Y, 1)
+        self.display.text(d1, OLED_TIME_X + 43, OLED_TIME_Y, 1)
+        self.display.text(d2, OLED_TIME_X + 62, OLED_TIME_Y, 1)
+        self.display.text(mo, OLED_TIME_X + 81, OLED_TIME_Y, 1)
+        self.display.text(ye, OLED_TIME_X + 100, OLED_TIME_Y, 1)
         self.display.show()
 
     def env_data(self, data):
