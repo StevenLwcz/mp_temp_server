@@ -35,7 +35,7 @@ OLED_IP_W = const(128)
 OLED_ENV_X = const(0)
 OLED_ENV_Y = const(8)
 OLED_ENV_H = const(24)
-OLED_ENV_W = const(128)
+OLED_ENV_W = const(80)
 
 class TempDisplay(object):
 
@@ -86,7 +86,7 @@ class TempDisplay(object):
         lt = time.localtime()
         d1 = day[lt[6]]
         mo = mon[lt[1] - 1]
-        ye = str(lt[0])[2:2]
+        ye = str(lt[0])[2:4]
         d2 = f'{lt[2]:02}'
         ti = f'{lt[3]:02}:{lt[4]:02}'
         
@@ -101,7 +101,7 @@ class TempDisplay(object):
     def env_data(self, data):
         self.display.fill_rect(OLED_ENV_X, OLED_ENV_Y, OLED_ENV_W, OLED_ENV_H, 0)
         self.display.text(f'{data[0]:.1f}C', OLED_ENV_X, OLED_ENV_Y)
-        self.display.text(f'{data[1]:.1f}hPa', OLED_ENV_X, OLED_ENV_Y + 8)
+        self.display.text(f'{data[1]:.1f}Pa', OLED_ENV_X, OLED_ENV_Y + 8)
         self.display.text(f'{data[2]:.2f}%', OLED_ENV_X, OLED_ENV_Y + 16)
         self.display.show()
         

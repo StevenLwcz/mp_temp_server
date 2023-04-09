@@ -10,9 +10,12 @@ from machine import Pin, I2C
 from wlanc import ssid, password
 from TempDisplay import TempDisplay
 import bme280_float as bme280
+import micropython
 
-WAIT_TEMP = const(300) # 30 seconds for testing will be 10 to 15 min 
-WAIT_LOOP = const(600) # 10 seconds for testing will be longer later
+OLED_MAX_Y = const(31)
+
+WAIT_TEMP = const(300) # 5 mins 
+WAIT_LOOP = const(300) # 5 mins
 
 led = Pin(15, Pin.OUT)
 onboard = Pin("LED", Pin.OUT, value=0)
@@ -25,7 +28,6 @@ wlan = network.WLAN(network.STA_IF)
 wlan.active(True)
 wlan.connect(ssid, password)
 
-# TODO send connection info to oled
 max_wait = 10
 while max_wait > 0:
     if wlan.status() < 0 or wlan.status() >= 3:
@@ -49,6 +51,7 @@ tempDisplay.setWlan(wlan)
 try:
     ntptime.settime()
 except OSError:
+    print("TIME OUT")
     ntptime.settime()
 #TODO adjust for BST
 
@@ -73,12 +76,11 @@ async def update_time():
         sec = lt[5]
         print(f"Time: {lt[3]:02}:{lt[4]:02}:{lt[5]:02} Len: {len(templist)}")
         tempDisplay.time_date()
-        tempDisplay.wlan_update_status()
+       # tempDisplay.wlan_update_status()
         await asyncio.sleep(60 - sec)
 
 async def temp_server(reader: StreamReader, writer: StreamWriter):
     print('New connection. with json')
-    # jdata = ujson.dumps(templist)
     try:
         data = await reader.readline()
         print(data)
@@ -90,7 +92,50 @@ async def temp_server(reader: StreamReader, writer: StreamWriter):
         print('Leaving Connection.')
     except asyncio.CancelledError:
         print('Connection dropped!')
+    
+def get_temp(data):
+    return data[1][0]
 
+# Fit temp range into 24 pixels height
+def graph_scale(min, max):
+    diff = max - min
+    if diff <= 0.2875:
+        return 80
+    if diff <= 0.575:
+        return 40
+    if diff <= 1.15:
+        return 20
+    if diff <= 2.3:
+        return 10
+    if diff <= 4.6:
+        return 5
+    if diff<= 9.2:
+        return 2.5
+    if diff <= 18.4:
+        return 1.25
+    if diff <= 23:
+        return 1
+    if diff <= 62:
+        return 0.5
+    return 0.25
+
+def display_temp_graph():
+    min_temp = get_temp(min(templist, key=get_temp, default=0))
+    max_temp = get_temp(max(templist, key=get_temp, default=0))
+    scale = graph_scale(min_temp, max_temp)
+    x = 80
+    length = -48 if len(templist) >= 48 else 0
+    print("Graph ", min_temp, max_temp, len(templist), scale)
+    tempDisplay.display.fill_rect(80, 8, 48, 24, 0)
+    for data in templist[length:]:
+        y = OLED_MAX_Y - int((get_temp(data) - min_temp) * scale)
+        print(y, end=' ')
+        tempDisplay.display.pixel(x, y, 1)
+        x += 1
+        
+    print("")
+    tempDisplay.display.show()
+        
 async def main(host='0.0.0.0', port=65510):
     asyncio.create_task(asyncio.start_server(temp_server, host, port))
     asyncio.create_task(readtemp())
@@ -98,12 +143,15 @@ async def main(host='0.0.0.0', port=65510):
     while True:
         onboard.on()
         await asyncio.sleep(0.25)
-       
         free = gc.mem_free() / 1024
         print(f"Alloc: {gc.mem_alloc() / 1024}  Free: {free}")
         if free < 80:
+            micropython.mem_info()
             gc.collect()
+            print(f"Alloc: {gc.mem_alloc() / 1024}  Free: {free}*")
+
         onboard.off()
+        display_temp_graph()
         await asyncio.sleep(WAIT_LOOP)
 
 try:
