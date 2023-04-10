@@ -1,6 +1,10 @@
 import asyncio 
 import json
 import sys
+from time import time, ctime
+
+def get_time(data):
+    return data[0]
 
 def get_temp(data):
     return data[1][0]
@@ -11,8 +15,11 @@ def get_press(data):
 def get_humid(data):
     return data[1][2]
 
+# tuple of ((time, value), (time, value))
 def get_min_max(data, fn):
-    return fn(min(data, key=fn, default=0)), fn(max(data, key=fn, default=0))
+    min_value = min(data, key=fn, default=0)
+    max_value = max(data, key=fn, default=0)
+    return (ctime(min_value[0]), fn(min_value)), (ctime(max_value[0]), fn(max_value))
 
 async def temp_client(message, address, port): 
      print(f'Send:{message!r}')
@@ -22,7 +29,6 @@ async def temp_client(message, address, port):
 
      data = await reader.readline()
      # print(f'Received: {data.decode()!r}')
-     print('Close the connection') 
      writer.close() 
      await writer.wait_closed()
      return data
@@ -38,10 +44,12 @@ async def main(argv):
      data = await temp_client(message, address, port)
      x = json.loads(data)
      min_value, max_value = get_min_max(x, get_temp) 
-     print(f'Temp - min: {min_value} max: {max_value}')
+     print(f'Temp - min: {min_value[0]}, {min_value[1]}, max: {max_value[0]}, {max_value[1]}')
+
      min_value, max_value = get_min_max(x, get_press) 
-     print(f'Pres - min: {min_value} max: {max_value}')
+     print(f'Pres - min: {min_value[0]}, {min_value[1]}, max: {max_value[0]}, {max_value[1]}')
+
      min_value, max_value = get_min_max(x, get_humid) 
-     print(f'Humi - min: {min_value} max: {max_value}')
+     print(f'Himi - min: {min_value[0]}, {min_value[1]}, max: {max_value[0]}, {max_value[1]}')
 
 asyncio.run(main(sys.argv))
