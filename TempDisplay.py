@@ -109,7 +109,6 @@ class Graph(object):
 
         print("")
         self.display.show()
-        time.sleep(20)
 
 class TempDisplay(object):
 
