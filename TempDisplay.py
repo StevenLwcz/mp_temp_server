@@ -28,7 +28,7 @@ OLED_WLAN_H = const(8)
 OLED_WLAN_W = const(8)
 
 OLED_IP_X = const(0)
-OLED_IP_Y = const(24)
+OLED_IP_Y = const(8)
 OLED_IP_H = const(7)
 OLED_IP_W = const(128)
 
@@ -51,6 +51,66 @@ def get_signal_level(rssi):
         return 6
     return 8    
 
+def get_temp(data):
+    return data[1][0]
+
+def get_press(data):
+    return data[1][1]
+
+def get_humid(data):
+    return data[1][2]
+
+# Fit temp range into 10 pixels height
+def graph_scale(min, max):
+    diff = max - min
+    if diff <= 0.5:
+        return 20
+    if diff <= 1:
+        return 10
+    if diff <= 2:
+        return 5
+    if diff <= 5:
+        return 2
+    if diff <= 10:
+        return 1
+    if diff <= 20:
+        return 0.5
+    if diff <= 50:
+        return 0.2
+    if diff <= 100:
+        return 0.1
+    return 10 / diff
+
+class Graph(object): 
+
+    # assume height of 10 pixels, x = left, y = bottom left, w width
+    def __init__(self, x, y, w, fn, display):
+        self.x = x
+        self.y = y
+        self.w = w
+        self.fn = fn
+        self.display = display
+
+    def display_graph(self, datalist):
+        length = -self.w if len(datalist) >= self.w else 0
+        values = datalist[length:]
+        min_value = self.fn(min(values, key=self.fn, default=0))
+        max_value = self.fn(max(values, key=self.fn, default=0))
+        scale = graph_scale(min_value, max_value)
+        print("Graph ", min_value, max_value, scale)
+        self.display.fill_rect(self.x, self.y - 9, self.w, 10, 0)
+        
+        x = self.x
+        for data in datalist[length:]:
+            y = self.y - int((self.fn(data) - min_value) * scale)
+            print(y, end=' ')
+            self.display.pixel(x, y, 1)
+            x += 1
+
+        print("")
+        self.display.show()
+        time.sleep(20)
+
 class TempDisplay(object):
 
     display = None
@@ -59,12 +119,29 @@ class TempDisplay(object):
     rssi = None
     ssid = None
     wlan = None
+    temp_graph = None
+    pres_graph = None
+    humi_graph = None
 
     def __init__(self, ssid):
         self.ssid = ssid
         self.i2c = I2C(0, sda=Pin(0), scl=Pin(1))
         print(self.i2c.scan())
         self.display = ssd1306.SSD1306_I2C(OLED_WIDTH, OLED_HEIGHT, self.i2c)
+
+    def initGraphs(self):
+        self.display.fill_rect(80, 8, 48, 24, 0)
+        self.display.hline(80, 20, 48, 1)
+        self.display.vline(104, 20, 12, 1)
+        self.display.show()
+        self.temp_graph = Graph(80, 18, 48, get_temp, self.display)
+        self.pres_graph = Graph(80, 31, 22, get_press, self.display)
+        self.humi_graph = Graph(106, 31, 22, get_humid, self.display)
+
+    def updateGraphs(self, data):
+        self.temp_graph.display_graph(data)
+        self.pres_graph.display_graph(data)
+        self.humi_graph.display_graph(data)
        
     def setWlan(self, wlan):
         self.wlan = wlan
