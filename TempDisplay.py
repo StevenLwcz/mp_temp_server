@@ -103,11 +103,9 @@ class Graph(object):
         x = self.x
         for data in datalist[length:]:
             y = self.y - int((self.fn(data) - min_value) * scale)
-            print(y, end=' ')
             self.display.pixel(x, y, 1)
             x += 1
 
-        print("")
         self.display.show()
 
 class TempDisplay(object):
