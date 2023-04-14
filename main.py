@@ -90,6 +90,8 @@ async def temp_server(reader: StreamReader, writer: StreamWriter):
         writer.write(bytes)
         writer.write(b'\n') 
         await writer.drain()
+        writer.close()
+        await writer.wait_closed()
         print('Leaving Connection.')
     except asyncio.CancelledError:
         print('Connection dropped!')
