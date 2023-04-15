@@ -45,6 +45,7 @@ def webpage():
             <head>
             <title>Pico W BME280 Weather Station</title>
             <meta http-equiv="refresh" content="60">
+            <link rel="icon" href="data:," />
             </head>
             <body>
             <p>{t}</p>
@@ -99,9 +100,8 @@ async def readbme280():
         await asyncio.sleep(WAIT_READING)
 
 async def serve_client(reader, writer):
-    print("Client connected")
     request_line = await reader.readline()
-    print("Request:", request_line)
+    # print("Request:", request_line)
 
  # We are not interested in HTTP request headers, skip them
     while await reader.readline() != b"\r\n":
@@ -113,7 +113,6 @@ async def serve_client(reader, writer):
     await writer.drain()
     writer.close()
     await writer.wait_closed()
-    print("Client disconnected")
 
 async def main():
     connect_to_network()
