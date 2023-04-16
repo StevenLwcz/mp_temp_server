@@ -1,0 +1,221 @@
+<!-- TODO  make Javascript call again after 5 mins (saves refresh page) -->
+<!-- TODO  Improve javascript structure  -->
+
+<!doctype html>
+<html lang="en">
+<head>
+<title>Temp Graph</title>
+<meta http-equiv="refresh" content="300">
+<link rel="icon" href="data:," />
+<script type="application/javascript">
+
+const C_HEIGHT = 220;
+const C_WIDTH = 630;
+const X_AXIS = 25
+const Y_AXIS = 200;
+const G_WIDTH = 600;
+const G_HEIGHT = 200;
+const G_MAX_NO = 300; // 2 pix per 5 mins
+
+function get_time(data)
+{
+    return data[0];
+}
+
+function get_temp(data)
+{
+    return data[1][0];
+}
+
+function get_pres(data)
+{
+    return data[1][1];
+}
+
+function get_humi(data)
+{
+    return data[1][2];
+}
+
+class Graph
+{
+    static min(array, fn)
+    {
+        var m = fn(array[0]);
+        var d = get_time(array[0])
+        for (var data of array)
+        {
+            if (fn(data) < m)
+            {
+                m = fn(data);
+                d = get_time(data);
+            }
+        }
+        return [d, m];
+    }
+
+    static max(array, fn)
+    {
+        var m = fn(array[0]);
+        var d = get_time(array[0])
+        for (var data of array)
+        {
+            if (fn(data) > m)
+            {
+                m = fn(data);
+                d = get_time(data);
+            }
+        }
+        return [d, m];
+    }
+
+    // 200 pixels
+    static scale(min, max)
+    {
+        const diff = max - min;
+        if (diff <= 0.5)
+            return 400;
+        if (diff <= 1)
+            return 200;
+        if (diff <= 2)
+            return 100;
+        if (diff <= 4)
+            return 50;
+        if (diff <= 5)
+            return 40;
+        if (diff <= 10)
+            return 20;
+        if (diff <= 20)
+            return 10;
+        if (diff <= 25)
+            return 8;
+        if (diff <= 50)
+            return 4;
+        if (diff <= 100)
+            return 2
+       return 200 / diff;
+    }
+
+    static axis(ctx, mn, scale, start)
+    {
+        // draw X Axis
+        ctx.beginPath()
+        ctx.strokeStyle = "blue";
+        ctx.lineWidth = 1;
+        ctx.moveTo(X_AXIS, 0);
+        ctx.lineTo(X_AXIS, C_HEIGHT);
+
+        // draw Y Axis
+        ctx.moveTo(0, Y_AXIS);
+        ctx.lineTo(C_WIDTH, Y_AXIS)
+        ctx.stroke();
+
+        // draw X scale
+        const inc = scale / 5;
+        var temp = Math.ceil(mn);
+
+        ctx.beginPath()
+        ctx.textBaseline = "bottom";
+        ctx.strokeStyle = "lightblue";
+        ctx.lineWidth = 1;
+        for (var y = 0; y < 10; y++)
+        {
+            var tempy = Y_AXIS - (temp - mn) * scale;
+            ctx.fillText(temp.toFixed(1), 0, tempy);
+            ctx.moveTo(X_AXIS + 1, tempy);
+            ctx.lineTo(C_WIDTH, tempy);
+            temp += inc;
+        }
+        ctx.stroke();
+
+        // draw Y scale
+        var hr = start.getHours();
+        var mi = start.getMinutes();
+        const z = X_AXIS + (mi / 60) * 24;
+        if (mi !=0) hr++;
+
+        ctx.beginPath()
+        for (var x = z; x < C_WIDTH; x+=24)
+        {
+            ctx.fillText(hr, x, Y_AXIS + 14);
+            ctx.moveTo(x, 0);
+            ctx.lineTo(x, Y_AXIS - 1);
+            hr++;
+            if (hr == 24) hr =0;
+        }
+        ctx.stroke();
+    }
+
+    // static drawGrap();
+}
+
+var request = new XMLHttpRequest();
+
+request.open('GET', 'http://192.168.43.149:65510');
+
+request.onload = function () {
+    var response = request.response;
+    var envData = JSON.parse(response);
+
+    const pos = envData.length > G_MAX_NO ? -G_MAX_NO : 0;
+    envData = envData.slice(pos);
+
+    var c = document.getElementById("graph1");
+    var ctx = c.getContext("2d");
+    ctx.font = "12px Arial";
+
+    var mn = Graph.min(envData, get_temp);
+    var mx = Graph.max(envData, get_temp);
+    var scale = Graph.scale(mn[1], mx[1]);
+
+    console.log("min: ", mn, " max:", mx, "scale:", scale);
+
+    var data = envData.shift();
+    var temp = data[1][0];
+    var startDate = new Date(data[0] * 1000);
+    data = envData[envData.length - 1];
+    var endDate = new Date(data[0] * 1000);
+
+    Graph.axis(ctx, mn[1], scale, startDate);
+
+    var tempy = Y_AXIS - (temp - mn[1]) * scale;
+
+    ctx.beginPath()
+    ctx.strokeStyle = "black";
+    ctx.lineWidth = 1;
+
+    var x = X_AXIS;
+    ctx.moveTo(x, tempy)
+
+    for (var data of envData)
+    {
+        x = x + 2;
+        temp = data[1][0];
+        tempy = Y_AXIS - (temp - mn[1]) * scale;
+        ctx.lineTo(x, tempy);
+    }
+
+    ctx.stroke();
+
+    const today = new Date();
+    const mnd = new Date(mn[0] * 1000);
+    const mxd = new Date(mx[0] * 1000);
+    document.getElementById("today").innerHTML = "Today: " + today.toLocaleString();
+    document.getElementById("min").innerHTML = "min: " + mn[1].toFixed(1) + "C at " + mnd.toLocaleString() +
+                                         "<br\>max: " + mx[1].toFixed(1) + "C at " + mxd.toLocaleString();
+    document.getElementById("dates").innerHTML = "Start: " + startDate.toLocaleString() + 
+                                              "<br\>End: " + endDate.toLocaleString();
+}
+
+request.send();
+
+</script>
+</head>
+<body>
+<p>Temperature Graph</p>
+<p id="today"></p>
+<canvas id="graph1" width="630" height="220" style="border: 0px solid black;"></canvas>
+<p id="dates"></p>
+<p id="min"></p>
+</body>
+</html>
