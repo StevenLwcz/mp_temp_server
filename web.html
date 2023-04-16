@@ -15,7 +15,7 @@ const X_AXIS = 25
 const Y_AXIS = 200;
 const G_WIDTH = 600;
 const G_HEIGHT = 200;
-const G_MAX_NO = 300; // 2 pix per 5 mins
+const G_MAX_NO = 290; // 2 pix per 5 mins 24 hrs
 
 function get_time(data)
 {
@@ -111,7 +111,7 @@ class Graph
         ctx.stroke();
 
         // draw X scale
-        const inc = scale / 5;
+        const inc = G_HEIGHT / (scale * 10);
         var temp = Math.ceil(mn);
 
         ctx.beginPath()
@@ -131,11 +131,12 @@ class Graph
         // draw Y scale
         var hr = start.getHours();
         var mi = start.getMinutes();
-        const z = X_AXIS + (mi / 60) * 24;
+        const z = X_AXIS + ((60 - mi)/ 60) * 24;
+        const end = X_AXIS + G_MAX_NO * 2;
         if (mi !=0) hr++;
 
         ctx.beginPath()
-        for (var x = z; x < C_WIDTH; x+=24)
+        for (var x = z; x < end; x+=24)
         {
             ctx.fillText(hr, x, Y_AXIS + 14);
             ctx.moveTo(x, 0);
@@ -166,7 +167,7 @@ request.onload = function () {
 
     var mn = Graph.min(envData, get_temp);
     var mx = Graph.max(envData, get_temp);
-    var scale = Graph.scale(mn[1], mx[1]);
+    const scale = Graph.scale(mn[1], mx[1]);
 
     console.log("min: ", mn, " max:", mx, "scale:", scale);
 
