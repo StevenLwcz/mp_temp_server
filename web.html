@@ -37,6 +37,14 @@ function get_humi(data)
     return data[1][2];
 }
 
+// round up to the nearest increment
+function round_to_inc(num, inc)
+{
+    x = Math.floor(num);
+    while (x < num) x += inc;
+    return x;
+}
+
 class Graph
 {
     static min(array, fn)
@@ -112,7 +120,7 @@ class Graph
 
         // draw X scale
         const inc = G_HEIGHT / (scale * 10);
-        var temp = Math.ceil(mn);
+        var temp = round_to_inc(mn, inc);
 
         ctx.beginPath()
         ctx.textBaseline = "bottom";
@@ -142,7 +150,7 @@ class Graph
             ctx.moveTo(x, 0);
             ctx.lineTo(x, Y_AXIS - 1);
             hr++;
-            if (hr == 24) hr =0;
+            if (hr == 24) hr = 0;
         }
         ctx.stroke();
     }
