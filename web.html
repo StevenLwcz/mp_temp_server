@@ -17,24 +17,39 @@ const G_WIDTH = 600;
 const G_HEIGHT = 200;
 const G_MAX_NO = 290; // 2 pix per 5 mins 24 hrs
 
-function get_time(data)
+function getTime(data)
 {
     return data[0];
 }
 
-function get_temp(data)
+function getTemp(data)
 {
     return data[1][0];
 }
 
-function get_pres(data)
+function getPressure(data)
 {
     return data[1][1];
 }
 
-function get_humi(data)
+function getHumidity(data)
 {
     return data[1][2];
+}
+
+function mapTemp(data)
+{
+    return [data[0], data[1][0]];
+}
+
+function mapPressure(data)
+{
+    return [data[0], data[1][1]];
+}
+
+function mapHumidity(data)
+{
+    return [data[0], data[1][2]];
 }
 
 // round up to the nearest increment
@@ -47,22 +62,49 @@ function round_to_inc(num, inc)
 
 class Graph
 {
-    static min(array, fn) {
-        return array.reduce(function (a, b) {
-           return fn(a) < fn(b) ? a : b;
+    ctx;
+    mapFn;
+    getFn;
+    mn; // [date, min]
+    mx; // [date, max]
+    envData;
+    startDate;
+    endDate;
+ 
+    constructor(canvas, envData, mapFn, getFn)
+    {
+        this.envData = envData;
+        this.mapFn = mapFn;
+        this.getFn = getFn;
+        this.ctx = document.getElementById(canvas).getContext("2d");
+        this.ctx.font = "12px Arial";
+// debugger;
+
+        this.mn = this.min();
+        this.mx = this.max();
+
+        this.scale = this.getScale();
+        console.log("min x: ", this.mn, " max:", this.mx, "scale:", this.scale);
+        this.startDate = new Date(envData[0][0] * 1000);
+        this.endDate = new Date(envData[envData.length - 1][0] * 1000);
+    }
+
+    min() {
+        return this.envData.map(this.mapFn).reduce(function (a, b) {
+           return a[1] < b[1]  ? a : b;
        });
     }
 
-    static max(array, fn) {
-        return array.reduce(function (a, b) {
-           return fn(a) > fn(b) ? a : b;
+    max() {
+        return this.envData.map(this.mapFn).reduce(function (a, b) {
+           return a[1] > b[1] ? a : b;
        });
     }
 
     // 200 pixels
-    static scale(min, max)
+    getScale()
     {
-        const diff = max - min;
+        const diff = this.mx[1] - this.mn[1];
         if (diff <= 0.5)
             return 400;
         if (diff <= 1)
@@ -86,58 +128,83 @@ class Graph
        return 200 / diff;
     }
 
-    static axis(ctx, mn, scale, start)
+    axis()
     {
         // draw X Axis
-        ctx.beginPath()
-        ctx.strokeStyle = "blue";
-        ctx.lineWidth = 1;
-        ctx.moveTo(X_AXIS, 0);
-        ctx.lineTo(X_AXIS, C_HEIGHT);
+        this.ctx.beginPath()
+        this.ctx.strokeStyle = "blue";
+        this.ctx.lineWidth = 1;
+        this.ctx.moveTo(X_AXIS, 0);
+        this.ctx.lineTo(X_AXIS, C_HEIGHT);
 
         // draw Y Axis
-        ctx.moveTo(0, Y_AXIS);
-        ctx.lineTo(C_WIDTH, Y_AXIS)
-        ctx.stroke();
+        this.ctx.moveTo(0, Y_AXIS);
+        this.ctx.lineTo(C_WIDTH, Y_AXIS)
+        this.ctx.stroke();
 
         // draw X scale
-        const inc = G_HEIGHT / (scale * 10);
-        var temp = round_to_inc(mn, inc);
+        const inc = G_HEIGHT / (this.scale * 10);
+        var temp = round_to_inc(this.mn[1], inc);
 
-        ctx.beginPath()
-        ctx.textBaseline = "bottom";
-        ctx.strokeStyle = "lightblue";
-        ctx.lineWidth = 1;
+        this.ctx.beginPath()
+        this.ctx.textBaseline = "bottom";
+        this.ctx.strokeStyle = "lightblue";
+        this.ctx.lineWidth = 1;
+
         for (var y = 0; y < 10; y++)
         {
-            var tempy = Y_AXIS - (temp - mn) * scale;
-            ctx.fillText(temp.toFixed(1), 0, tempy);
-            ctx.moveTo(X_AXIS + 1, tempy);
-            ctx.lineTo(C_WIDTH, tempy);
+            var tempy = Y_AXIS - (temp - this.mn[1]) * this.scale;
+            this.ctx.fillText(temp.toFixed(1), 0, tempy);
+            this.ctx.moveTo(X_AXIS + 1, tempy);
+            this.ctx.lineTo(C_WIDTH, tempy);
             temp += inc;
         }
-        ctx.stroke();
+        this.ctx.stroke();
 
         // draw Y scale
-        var hr = start.getHours();
-        var mi = start.getMinutes();
+        let hr = this.startDate.getHours();
+        const mi = this.startDate.getMinutes();
         const z = X_AXIS + ((60 - mi)/ 60) * 24;
         const end = X_AXIS + G_MAX_NO * 2;
         if (mi !=0) hr++;
 
-        ctx.beginPath()
+        this.ctx.beginPath()
         for (var x = z; x < end; x+=24)
         {
-            ctx.fillText(hr, x, Y_AXIS + 14);
-            ctx.moveTo(x, 0);
-            ctx.lineTo(x, Y_AXIS - 1);
+            this.ctx.fillText(hr, x, Y_AXIS + 14);
+            this.ctx.moveTo(x, 0);
+            this.ctx.lineTo(x, Y_AXIS - 1);
             hr++;
             if (hr == 24) hr = 0;
         }
-        ctx.stroke();
+        this.ctx.stroke();
     }
 
-    // static drawGrap();
+    drawGraph()
+    {
+        let data = this.envData.shift();
+        let temp = this.getFn(data);
+        data = this.envData[this.envData.length - 1];
+
+        let tempy = Y_AXIS - (temp - this.mn[1]) * this.scale;
+
+        this.ctx.beginPath()
+        this.ctx.strokeStyle = "black";
+        this.ctx.lineWidth = 1;
+
+        let x = X_AXIS;
+        this.ctx.moveTo(x, tempy)
+
+        for (let d of this.envData)
+        {
+            x = x + 2;
+            temp = this.getFn(d); 
+            tempy = Y_AXIS - (temp - this.mn[1]) * this.scale;
+            this.ctx.lineTo(x, tempy);
+        }
+
+        this.ctx.stroke();
+    }
 }
 
 var request = new XMLHttpRequest();
@@ -148,70 +215,57 @@ request.onload = function () {
     var response = request.response;
     var envData = JSON.parse(response);
 
-    if (envData.length == 0)
+    if (envData.length < 2)
+    {
         document.getElementById("today").innerHTML = "No data avaliable";
+        return;
+    }
 
     const pos = envData.length > G_MAX_NO ? -G_MAX_NO : 0;
     envData = envData.slice(pos);
 
-    var c = document.getElementById("graph1");
-    var ctx = c.getContext("2d");
-    ctx.font = "12px Arial";
-
-    var m = Graph.min(envData, get_temp)
-    var mn = [m[0], get_temp(m)];
-    m = Graph.max(envData, get_temp);
-    var mx = [m[0], get_temp(m)];
-
-    const scale = Graph.scale(mn[1], mx[1]);
-    console.log("min x: ", mn, " max:", mx, "scale:", scale);
-
-    var data = envData.shift();
-    var temp = data[1][0];
-    var startDate = new Date(data[0] * 1000);
-    data = envData[envData.length - 1];
-    var endDate = new Date(data[0] * 1000);
-
-    Graph.axis(ctx, mn[1], scale, startDate);
-
-    var tempy = Y_AXIS - (temp - mn[1]) * scale;
-
-    ctx.beginPath()
-    ctx.strokeStyle = "black";
-    ctx.lineWidth = 1;
-
-    var x = X_AXIS;
-    ctx.moveTo(x, tempy)
-
-    for (var data of envData)
-    {
-        x = x + 2;
-        temp = data[1][0];
-        tempy = Y_AXIS - (temp - mn[1]) * scale;
-        ctx.lineTo(x, tempy);
-    }
-
-    ctx.stroke();
+    tg = new Graph("graph1", envData, mapTemp, getTemp);
+    tg.axis();
+    tg.drawGraph();
 
     const today = new Date();
-    const mnd = new Date(mn[0] * 1000);
-    const mxd = new Date(mx[0] * 1000);
+    const mnd = new Date(tg.mn[0] * 1000);
+    const mxd = new Date(tg.mx[0] * 1000);
     document.getElementById("today").innerHTML = "Today: " + today.toLocaleString();
-    document.getElementById("min").innerHTML = "min: " + mn[1].toFixed(1) + "C at " + mnd.toLocaleString() +
-                                         "<br\>max: " + mx[1].toFixed(1) + "C at " + mxd.toLocaleString();
-    document.getElementById("dates").innerHTML = "Start: " + startDate.toLocaleString() + 
-                                              "<br\>End: " + endDate.toLocaleString();
+    document.getElementById("tmin").innerHTML = `min: ${tg.mn[1].toFixed(1)}C at ${mnd.toLocaleString()}` +
+                                           `<br\>max: ${tg.mx[1].toFixed(1)}C at ${mxd.toLocaleString()}`;
+    document.getElementById("tdates").innerHTML = "Start: " + tg.startDate.toLocaleString() + 
+                                               "<br\>End: " + tg.endDate.toLocaleString();
+
+    pg = new Graph("graph2", envData, mapPressure, getPressure);
+    pg.axis();
+    pg.drawGraph();
+
+    pg = new Graph("graph3", envData, mapHumidity, getHumidity);
+    pg.axis();
+    pg.drawGraph();
 }
 
+//debugger;
 request.send();
 
 </script>
 </head>
 <body>
+<h4 id="today"></h4>
 <p>Temperature Graph</p>
-<p id="today"></p>
 <canvas id="graph1" width="630" height="220" style="border: 0px solid black;"></canvas>
-<p id="dates"></p>
-<p id="min"></p>
+<p id="tdates"></p>
+<p id="tmin"></p>
+<hr/>
+<p>Pressure Graph</p>
+<canvas id="graph2" width="630" height="220" style="border: 0px solid black;"></canvas>
+<p id="pdates"></p>
+<p id="pmin"></p>
+<hr/>
+<p>Humidity Graph</p>
+<canvas id="graph3" width="630" height="220" style="border: 0px solid black;"></canvas>
+<p id="hdates"></p>
+<p id="hmin"></p>
 </body>
 </html>
