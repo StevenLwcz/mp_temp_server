@@ -83,6 +83,8 @@ class Graph
     height;
     width;
     x_axis;
+    scale;
+    dp;
  
     constructor(canvas, envData, mapFn, getFn)
     {
@@ -97,12 +99,14 @@ class Graph
 
         this.mn = this.min();
         this.mx = this.max();
-
-        this.x_axis = this.ctx.measureText(this.mx[1].toFixed(1)).width + 1;
-        // console.log("x", this.x_axis, this.mx[1].toFixed(1));
-
         this.scale = this.getScale();
-        console.log("min x: ", this.mn, " max:", this.mx, "scale:", this.scale);
+
+        this.dp = 1;
+        if (this.scale <= 20)  this.dp = 0;
+        if (this.scale >= 400) this.dp = 2;
+        this.x_axis = this.ctx.measureText(this.mx[1].toFixed(this.dp)).width + 1;
+
+        console.log("min x: ", this.mn, " max:", this.mx, "scale:", this.scale, "dp", this.dp);
         this.startDate = new Date(envData[0][0] * 1000);
         this.endDate = new Date(envData[envData.length - 1][0] * 1000);
     }
@@ -142,7 +146,9 @@ class Graph
         if (diff <= 50)
             return 4;
         if (diff <= 100)
-            return 2
+            return 2;
+        if (diff <= 200)
+            return 1;
        return 200 / diff;
     }
 
@@ -172,11 +178,12 @@ class Graph
         for (var y = 0; y < 10; y++)
         {
             var tempy = Y_AXIS - (temp - this.mn[1]) * this.scale;
-            this.ctx.fillText(temp.toFixed(1), 0, tempy);
+            this.ctx.fillText(temp.toFixed(this.dp), 0, tempy);
             this.ctx.moveTo(this.x_axis + 1, tempy);
             this.ctx.lineTo(C_WIDTH, tempy);
             temp += inc;
         }
+        
         this.ctx.stroke();
 
         // draw Y scale
@@ -253,8 +260,8 @@ request.onload = function () {
     const mnd = new Date(tg.mn[0] * 1000);
     const mxd = new Date(tg.mx[0] * 1000);
     document.getElementById("today").innerHTML = "Today: " + today.toLocaleString();
-    document.getElementById("tmin").innerHTML = `min: ${tg.mn[1].toFixed(1)}C at ${mnd.toLocaleString()}` +
-                                           `<br\>max: ${tg.mx[1].toFixed(1)}C at ${mxd.toLocaleString()}`;
+    document.getElementById("tmin").innerHTML = `min: ${tg.mn[1].toFixed(tg.dp)}C at ${mnd.toLocaleString()}` +
+                                           `<br\>max: ${tg.mx[1].toFixed(tg.dp)}C at ${mxd.toLocaleString()}`;
     document.getElementById("tdates").innerHTML = "Start: " + tg.startDate.toLocaleString() + 
                                                "<br\>End: " + tg.endDate.toLocaleString();
 
