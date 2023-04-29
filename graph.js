@@ -1,6 +1,5 @@
-console.log("hello");
-
 window.onload = request_data();
+setInterval(request_data, 360000); // 6 minutes
 
 const C_HEIGHT = 220;
 const C_WIDTH = 560;
@@ -89,6 +88,7 @@ class Graph
         this.height = c.height;
         this.ctx = c.getContext("2d");
         this.ctx.font = "12px Arial";
+        this.ctx.clearRect(0, 0, c.width, c.height);
 
         this.mn = this.min();
         this.mx = this.max();
