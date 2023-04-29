@@ -5,17 +5,17 @@
 <html lang="en">
 <head>
 <title>Temp Graph</title>
-<meta http-equiv="refresh" content="300">
+<meta http-equiv="refresh" content="360">
 <link rel="icon" href="data:," />
 <script type="application/javascript">
 
 const C_HEIGHT = 220;
-const C_WIDTH = 630;
+const C_WIDTH = 560;
 // const X_AXIS = 25
 const Y_AXIS = 200;
-const G_WIDTH = 600;
+// const G_WIDTH = 600;
 const G_HEIGHT = 200;
-const G_MAX_NO = 290; // 2 pix per 5 mins 24 hrs
+const G_MAX_NO = 250; // 2 pix per 6 mins 24 hrs
 
 function getTime(data)
 {
@@ -133,6 +133,8 @@ class Graph
             return 200;
         if (diff <= 2)
             return 100;
+        if (diff <= 3)
+            return 66.6;
         if (diff <= 4)
             return 50;
         if (diff <= 5)
@@ -147,6 +149,8 @@ class Graph
             return 4;
         if (diff <= 100)
             return 2;
+        if (diff <= 150)
+            return 1.33;
         if (diff <= 200)
             return 1;
        return 200 / diff;
@@ -189,12 +193,13 @@ class Graph
         // draw Y scale
         let hr = this.startDate.getHours();
         const mi = this.startDate.getMinutes();
-        const z = this.x_axis + ((60 - mi)/ 60) * 24;
+        const z = this.x_axis + ((60 - mi)/ 60) * 20;  // 60/6 * 2
         const end = this.x_axis + G_MAX_NO * 2;
         if (mi != 0) hr++;
+        if (hr == 24) hr = 0;
 
         this.ctx.beginPath()
-        for (var x = z; x < end; x+=24)
+        for (var x = z; x < end; x+=20)
         {
             this.ctx.fillText(hr, x, Y_AXIS + 14);
             this.ctx.moveTo(x, 0);
@@ -205,7 +210,7 @@ class Graph
         this.ctx.stroke();
     }
 
-    drawGraph(colour = "black")
+    drawGraph(colour = "blue")
     {
         if (this.envData.length < 2)
             return;
