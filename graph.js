@@ -253,7 +253,7 @@ request.onload = function () {
     const pos = envData.length > G_MAX_NO ? -G_MAX_NO : 0;
     envData = envData.slice(pos);
 
-    tg = new Graph("graph1", envData, mapTemp, getTemp);
+    var tg = new Graph("graph1", envData, mapTemp, getTemp);
     tg.axis();
     tg.drawGraph();
 
@@ -266,15 +266,15 @@ request.onload = function () {
     document.getElementById("tdates").innerHTML = "Start: " + tg.startDate.toLocaleString() + 
                                                "<br\>End: " + tg.endDate.toLocaleString();
 
-    pg = new Graph("graph2", envData, mapPressure, getPressure);
+    var pg = new Graph("graph2", envData, mapPressure, getPressure);
     pg.axis("red", "pink");
     pg.drawGraph("red");
 
-    pg = new Graph("graph3", envData, mapHumidity, getHumidity);
+    var pg = new Graph("graph3", envData, mapHumidity, getHumidity);
     pg.axis("green", "lightgreen");
     pg.drawGraph("green");
 
-    pg = new Graph("graph4", envData, mapFree, getFree);
+    var pg = new Graph("graph4", envData, mapFree, getFree);
     pg.axis("purple", "plum");
     pg.drawGraph("purple");
 }
