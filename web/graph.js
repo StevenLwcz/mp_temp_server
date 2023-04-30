@@ -9,53 +9,11 @@ const Y_AXIS = 200;
 const G_HEIGHT = 200;
 const G_MAX_NO = 250; // 2 pix per 6 mins 24 hrs
 
-function getTime(data)
-{
-    return data[0];
-}
-
-function getTemp(data)
-{
-    return data[1][0];
-}
-
-function getPressure(data)
-{
-    return data[1][1];
-}
-
-function getHumidity(data)
-{
-    return data[1][2];
-}
-
-function getFree(data)
-{
-    return data[1][3];
-}
-
-function mapTemp(data)
-{
-    return [data[0], data[1][0]];
-}
-
-function mapPressure(data)
-{
-    return [data[0], data[1][1]];
-}
-
-function mapHumidity(data)
-{
-    return [data[0], data[1][2]];
-}
-
-function mapFree(data)
-{
-    return [data[0], data[1][3]];
-}
+const getItem = idx => data => data[1][idx];
+const mapItem = idx => data => [data[0], data[1][idx]];
 
 // round up to the nearest increment
-function round_to_inc(num, inc)
+round_to_inc = (num, inc) =>
 {
     x = Math.floor(num);
     while (x < num) x += inc;
@@ -77,12 +35,12 @@ class Graph
     x_axis;
     scale;
     dp;
- 
-    constructor(canvas, envData, mapFn, getFn)
+
+    constructor(canvas, envData, idx)
     {
         this.envData = envData;
-        this.mapFn = mapFn;
-        this.getFn = getFn;
+        this.mapFn = mapItem(idx);
+        this.getFn = getItem(idx);
         let c = document.getElementById(canvas);
         this.width = c.width;
         this.height = c.height;
@@ -105,13 +63,13 @@ class Graph
     }
 
     min() {
-        return this.envData.map(this.mapFn).reduce(function (a, b) {
-           return a[1] < b[1]  ? a : b;
+        return this.envData.map(this.mapFn).reduce((a, b) => {
+           return a[1] < b[1] ? a : b;
        });
     }
 
     max() {
-        return this.envData.map(this.mapFn).reduce(function (a, b) {
+        return this.envData.map(this.mapFn).reduce((a, b) => {
            return a[1] > b[1] ? a : b;
        });
     }
@@ -233,7 +191,6 @@ class Graph
     }
 }
 
-
 function request_data() {
 
 var request = new XMLHttpRequest();
@@ -254,7 +211,7 @@ request.onload = function () {
     const pos = envData.length > G_MAX_NO ? -G_MAX_NO : 0;
     envData = envData.slice(pos);
 
-    var tg = new Graph("graph1", envData, mapTemp, getTemp);
+    var tg = new Graph("graph1", envData, 0);
     tg.axis();
     tg.drawGraph();
 
@@ -267,15 +224,15 @@ request.onload = function () {
     document.getElementById("tdates").innerHTML = "Start: " + tg.startDate.toLocaleString() + 
                                                "<br\>End: " + tg.endDate.toLocaleString();
 
-    var pg = new Graph("graph2", envData, mapPressure, getPressure);
+    var pg = new Graph("graph2", envData, 1);
     pg.axis("red", "pink");
     pg.drawGraph("red");
 
-    var pg = new Graph("graph3", envData, mapHumidity, getHumidity);
+    var pg = new Graph("graph3", envData, 2);
     pg.axis("green", "lightgreen");
     pg.drawGraph("green");
 
-    var pg = new Graph("graph4", envData, mapFree, getFree);
+    var pg = new Graph("graph4", envData, 3);
     pg.axis("purple", "plum");
     pg.drawGraph("purple");
 }
@@ -283,4 +240,3 @@ request.onload = function () {
 request.send();
 
 }
-
