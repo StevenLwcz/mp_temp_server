@@ -91,15 +91,10 @@ async def temp_server(reader: StreamReader, writer: StreamWriter):
     try:
         json_request = False
         request_line = await reader.readline()
-        print("RL " + str(request_line))
-        # if data = "GETTEMP" ...
-        request = request_line.decode();
+        request = request_line.decode()
         request = request.split()
         print(request)
-        # if data == b'GET / HTTP/1.1\r\n':
-        if request[0] == 'GET':
-        
-            # while await reader.readline() not = b'\r\n'
+        if request[0] == 'GET' and request[2] == 'HTTP/1.1':
             while True:
                 line = await reader.readline()                
                 if line == b'\r\n':
@@ -116,9 +111,7 @@ async def temp_server(reader: StreamReader, writer: StreamWriter):
                 writer.write(b'Access-Control-Allow-Origin: *\r\n')
                 writer.write(b'\r\n')
             
-                bytes = str.encode(json.dumps(templist))
-                writer.write(bytes)
-                writer.write(b'\n')
+                writer.write(str.encode(json.dumps(templist)))
             else:
                 file = request[1]
                 if file == "/":
@@ -130,7 +123,11 @@ async def temp_server(reader: StreamReader, writer: StreamWriter):
                         writer.write(b'HTTP/1.0 200 OK\r\nContent-type: text/html\r\n\r\n')
                         writer.write(fd.read().encode())
                 except:
-                    writer.write('HTTP/1.0 404 Not Found\r\n'.encode())
+                    writer.write(b'HTTP/1.0 404 Not Found\r\n')
+        else: # client
+            bytes = str.encode(json.dumps(templist))
+            writer.write(bytes)
+            writer.write(b'\n')
 
         await writer.drain()
         writer.close()
