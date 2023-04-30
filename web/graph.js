@@ -239,6 +239,7 @@ function request_data() {
 var request = new XMLHttpRequest();
 
 request.open('GET', 'http://192.168.43.149:65510');
+request.setRequestHeader("Accept", "application/json\r\n");
 
 request.onload = function () {
     var response = request.response;
