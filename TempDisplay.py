@@ -97,11 +97,10 @@ class Graph(object):
         min_value = self.fn(min(values, key=self.fn, default=0))
         max_value = self.fn(max(values, key=self.fn, default=0))
         scale = graph_scale(min_value, max_value)
-        print("Graph ", min_value, max_value, scale)
         self.display.fill_rect(self.x, self.y - 9, self.w, 10, 0)
         
         x = self.x
-        for data in datalist[length:]:
+        for data in values:
             y = self.y - int((self.fn(data) - min_value) * scale)
             self.display.pixel(x, y, 1)
             x += 1
