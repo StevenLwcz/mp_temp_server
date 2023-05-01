@@ -7,13 +7,13 @@ def get_time(data):
     return data[0]
 
 def get_temp(data):
-    return data[1][0]
+    return data[1]
 
 def get_press(data):
-    return data[1][1]
+    return data[2]
 
 def get_humid(data):
-    return data[1][2]
+    return data[3]
 
 # tuple of ((time, value), (time, value))
 def get_min_max(data, fn):
@@ -43,6 +43,7 @@ async def main(argv):
      message = "GETTEMP\n"
      data = await temp_client(message, address, port)
      x = json.loads(data)
+     print(x)
      min_value, max_value = get_min_max(x, get_temp) 
      print(f'Temp - min: {min_value[0]}, {min_value[1]}, max: {max_value[0]}, {max_value[1]}')
 
