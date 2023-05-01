@@ -70,8 +70,9 @@ async def readtemp():
         free = gc.mem_free() / 1024
         lt = time.localtime()
         bme.read_compensated_data(result)
-        rdata = [round(result[0], 2), round(result[1], 1), round(result[2], 1), round(free, 1)]
-        templist.append((time.mktime(lt), rdata))
+        data = [time.mktime(lt)]
+        data.extend([round(result[0], 2), round(result[1], 1), round(result[2], 1), round(free, 1)])
+        templist.append(data)
         tempDisplay.env_data(result)
         tempDisplay.updateGraphs(templist)
         print(f"Time: {lt[3]:02}:{lt[4]:02}:{lt[5]:02} Len: {len(templist)}")

@@ -9,8 +9,8 @@ const Y_AXIS = 200;
 const G_HEIGHT = 200;
 const G_MAX_NO = 250; // 2 pix per 6 mins 24 hrs
 
-const getItem = idx => data => data[1][idx];
-const mapItem = idx => data => [data[0], data[1][idx]];
+const getItem = idx => data => data[idx];
+const mapItem = idx => data => [data[0], data[idx]];
 
 // round up to the nearest increment
 round_to_inc = (num, inc) =>
@@ -48,7 +48,7 @@ class Graph
         this.ctx.font = "12px Arial";
         this.ctx.clearRect(0, 0, c.width, c.height);
 
-        this.mn = this.min();
+        this.mn = this.mapFn(this.min());
         this.mx = this.max();
         this.scale = this.getScale();
 
@@ -65,6 +65,12 @@ class Graph
     min() {
         return this.envData.map(this.mapFn).reduce((a, b) => {
            return a[1] < b[1] ? a : b;
+       });
+    }
+
+    min() {
+        return this.envData.reduce((a, b) => {
+           return getFNa()] < getFn(b) ? a : b;
        });
     }
 

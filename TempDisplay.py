@@ -51,15 +51,6 @@ def get_signal_level(rssi):
         return 6
     return 8    
 
-def get_temp(data):
-    return data[1][0]
-
-def get_press(data):
-    return data[1][1]
-
-def get_humid(data):
-    return data[1][2]
-
 # Fit temp range into 10 pixels height
 def graph_scale(min, max):
     diff = max - min
@@ -130,9 +121,9 @@ class TempDisplay(object):
         self.display.hline(80, 20, 48, 1)
         self.display.vline(104, 20, 12, 1)
         self.display.show()
-        self.temp_graph = Graph(80, 18, 48, get_temp, self.display)
-        self.pres_graph = Graph(80, 31, 22, get_press, self.display)
-        self.humi_graph = Graph(106, 31, 22, get_humid, self.display)
+        self.temp_graph = Graph(80, 18, 48, lambda d : d[1], self.display)
+        self.pres_graph = Graph(80, 31, 22, lambda d : d[2], self.display)
+        self.humi_graph = Graph(106, 31, 22, lambda d: d[3], self.display)
 
     def updateGraphs(self, data):
         self.temp_graph.display_graph(data)
