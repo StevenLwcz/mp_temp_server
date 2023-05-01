@@ -23,7 +23,6 @@ round_to_inc = (num, inc) =>
 class Graph
 {
     ctx;
-    mapFn;
     getFn;
     mn; // [date, min]
     mx; // [date, max]
@@ -39,7 +38,7 @@ class Graph
     constructor(canvas, envData, idx)
     {
         this.envData = envData;
-        this.mapFn = mapItem(idx);
+       // this.mapFn = mapItem(idx);
         this.getFn = getItem(idx);
         let c = document.getElementById(canvas);
         this.width = c.width;
@@ -48,8 +47,8 @@ class Graph
         this.ctx.font = "12px Arial";
         this.ctx.clearRect(0, 0, c.width, c.height);
 
-        this.mn = this.mapFn(this.min());
-        this.mx = this.max();
+        this.mn = this.min() => [data[0], data[idx]]
+        this.mx = this.max() => [data[0], data[idx]]
         this.scale = this.getScale();
 
         this.dp = 1;
@@ -63,20 +62,14 @@ class Graph
     }
 
     min() {
-        return this.envData.map(this.mapFn).reduce((a, b) => {
-           return a[1] < b[1] ? a : b;
-       });
-    }
-
-    min() {
         return this.envData.reduce((a, b) => {
-           return getFNa()] < getFn(b) ? a : b;
+           return getFn(a) < getFn(b) ? a : b;
        });
     }
 
     max() {
-        return this.envData.map(this.mapFn).reduce((a, b) => {
-           return a[1] > b[1] ? a : b;
+        return this.envData.reduce((a, b) => {
+           return getFn(a) > getFn(b) ? a : b;
        });
     }
 

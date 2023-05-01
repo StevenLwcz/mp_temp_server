@@ -76,7 +76,7 @@ async def readtemp():
         tempDisplay.env_data(result)
         tempDisplay.updateGraphs(templist)
         print(f"Time: {lt[3]:02}:{lt[4]:02}:{lt[5]:02} Len: {len(templist)}")
-        print(rdata)
+        print(data)
         await asyncio.sleep(WAIT_TEMP)
         
 async def update_time():
@@ -92,6 +92,7 @@ async def temp_server(reader: StreamReader, writer: StreamWriter):
     try:
         json_request = False
         request_line = await reader.readline()
+        print(request_line)
         request = request_line.decode()
         request = request.split()
         print(request)
