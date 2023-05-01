@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 use std::env;
 
 #[derive(Debug, Deserialize, Serialize)]
-struct SensorData(u32, (f32, f32, f32));
+struct SensorData(u32, f32, f32, f32, f32);
 
 #[derive(Debug, Deserialize, Serialize)]
 struct ServerData(Vec<SensorData>);
@@ -18,17 +18,16 @@ fn main() {
     }
     let address = &args[1];
 
-    println!("Connecting....");
     let mut stream = TcpStream::connect(address)
                                .expect("Could not connect to server");
     let cmd = "GETTEMP\n";
-    println!("Sending command {cmd} ....");
+    println!("Sending command {cmd}");
     stream.write(cmd.as_bytes()).expect("Failed to write to server");
 
     let mut reader = BufReader::new(&stream);
 
     let mut buffer: Vec<u8> = vec![];
-    println!("Reading....");
+    println!("Reading...");
     reader.read_until(b'\n', &mut buffer).expect("Could not read into buffer");
 
     let str1 = str::from_utf8(&buffer).expect("Could not write buffer as string");
