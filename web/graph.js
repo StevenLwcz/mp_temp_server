@@ -1,4 +1,5 @@
 window.onload = request_data();
+
 setInterval(request_data, 360000); // 6 minutes
 
 const C_HEIGHT = 220;
@@ -47,8 +48,10 @@ class Graph
         this.ctx.font = "12px Arial";
         this.ctx.clearRect(0, 0, c.width, c.height);
 
-        this.mn = this.min() => [data[0], data[idx]]
-        this.mx = this.max() => [data[0], data[idx]]
+        let mapFn = mapItem(idx);
+        this.mn = mapFn(this.min());
+        this.mx = mapFn(this.max());
+
         this.scale = this.getScale();
 
         this.dp = 1;
@@ -56,20 +59,20 @@ class Graph
         if (this.scale >= 400) this.dp = 2;
         this.x_axis = this.ctx.measureText(this.mx[1].toFixed(this.dp)).width + 1;
 
-        console.log("min x: ", this.mn, " max:", this.mx, "scale:", this.scale, "dp", this.dp);
+        // console.log("min x: ", this.mn, " max:", this.mx, "scale:", this.scale, "dp", this.dp);
         this.startDate = new Date(envData[0][0] * 1000);
         this.endDate = new Date(envData[envData.length - 1][0] * 1000);
     }
 
     min() {
         return this.envData.reduce((a, b) => {
-           return getFn(a) < getFn(b) ? a : b;
+           return this.getFn(a) < this.getFn(b) ? a : b;
        });
     }
 
     max() {
         return this.envData.reduce((a, b) => {
-           return getFn(a) > getFn(b) ? a : b;
+           return this.getFn(a) > this.getFn(b) ? a : b;
        });
     }
 
@@ -210,7 +213,7 @@ request.onload = function () {
     const pos = envData.length > G_MAX_NO ? -G_MAX_NO : 0;
     envData = envData.slice(pos);
 
-    var tg = new Graph("graph1", envData, 0);
+    var tg = new Graph("graph1", envData, 1);
     tg.axis();
     tg.drawGraph();
 
@@ -223,15 +226,15 @@ request.onload = function () {
     document.getElementById("tdates").innerHTML = "Start: " + tg.startDate.toLocaleString() + 
                                                "<br\>End: " + tg.endDate.toLocaleString();
 
-    var pg = new Graph("graph2", envData, 1);
+    var pg = new Graph("graph2", envData, 2);
     pg.axis("red", "pink");
     pg.drawGraph("red");
 
-    var pg = new Graph("graph3", envData, 2);
+    var pg = new Graph("graph3", envData, 3);
     pg.axis("green", "lightgreen");
     pg.drawGraph("green");
 
-    var pg = new Graph("graph4", envData, 3);
+    var pg = new Graph("graph4", envData, 4);
     pg.axis("purple", "plum");
     pg.drawGraph("purple");
 }
