@@ -13,6 +13,18 @@ const G_MAX_NO = 250; // 2 pix per 6 mins 24 hrs
 const getItem = idx => data => data[idx];
 const mapItem = idx => data => [data[0], data[idx]];
 
+function min(fn, data) {
+    return data.reduce((a, b) => {
+        return fn(a) < fn(b) ? a : b;
+    });
+}
+
+function max(fn, data) {
+    return data.reduce((a, b) => {
+        return fn(a) > fn(b) ? a : b;
+    });
+}
+
 // round up to the nearest increment
 round_to_inc = (num, inc) =>
 {
@@ -24,7 +36,6 @@ round_to_inc = (num, inc) =>
 class Graph
 {
     ctx;
-    getFn;
     mn; // [date, min]
     mx; // [date, max]
     envData;
@@ -35,11 +46,11 @@ class Graph
     x_axis;
     scale;
     dp;
+    getFn;
 
     constructor(canvas, envData, idx)
     {
         this.envData = envData;
-       // this.mapFn = mapItem(idx);
         this.getFn = getItem(idx);
         let c = document.getElementById(canvas);
         this.width = c.width;
@@ -49,8 +60,8 @@ class Graph
         this.ctx.clearRect(0, 0, c.width, c.height);
 
         let mapFn = mapItem(idx);
-        this.mn = mapFn(this.min());
-        this.mx = mapFn(this.max());
+        this.mn = mapFn(min(getItem(idx), envData));
+        this.mx = mapFn(max(getItem(idx), envData));
 
         this.scale = this.getScale();
 
@@ -62,18 +73,6 @@ class Graph
         // console.log("min x: ", this.mn, " max:", this.mx, "scale:", this.scale, "dp", this.dp);
         this.startDate = new Date(envData[0][0] * 1000);
         this.endDate = new Date(envData[envData.length - 1][0] * 1000);
-    }
-
-    min() {
-        return this.envData.reduce((a, b) => {
-           return this.getFn(a) < this.getFn(b) ? a : b;
-       });
-    }
-
-    max() {
-        return this.envData.reduce((a, b) => {
-           return this.getFn(a) > this.getFn(b) ? a : b;
-       });
     }
 
     // 200 pixels
