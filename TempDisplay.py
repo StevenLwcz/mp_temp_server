@@ -80,11 +80,11 @@ def graph_scale_24(min, max):
     if diff <= 2:
         return 12
     if diff <= 3:
-        return 8:
+        return 8
     if diff <= 6:
-        return 4;
+        return 4
     if diff <= 8:
-        return 3;
+        return 3
     if diff <= 12:
         return 2
     if diff <= 24:

@@ -82,7 +82,6 @@ async def update_time():
     while True:
         lt = time.localtime()
         sec = lt[5]
-        # print(f"Time: {lt[3]:02}:{lt[4]:02}:{lt[5]:02} Len: {len(templist)}")
         tempDisplay.time_date()
         tempDisplay.wlan_update_status()
         await asyncio.sleep(60 - sec)
@@ -103,32 +102,29 @@ async def temp_server(reader: StreamReader, writer: StreamWriter):
                 json_request = False;
                 while True:
                     line = await reader.readline()
-                    if line == b'\r\n':
-                        break
-
-                    if line == b'Accept: application/json\r\n':
-                        print("JSON REQUEST")
+                    if json_request == False and line == b'Accept: application/json\r\n':
+                        print("JSON Request")
                         json_request = True
+                    elif line == b'\r\n':
+                        break
                         
                 if json_request: 
-                    writer.write(b'HTTP/1.0 200 OK\r\n')
-                    writer.write(b'Content-type: application/json\r\n')
-                    writer.write(b'Access-Control-Allow-Origin: *\r\n')
-                    writer.write(b'\r\n')
-                
+                    writer.write(b'HTTP/1.0 200 OK\r\nContent-type: application/json\r\n')
+                    writer.write(b'Access-Control-Allow-Origin: *\r\n\r\n')
+                    await writer.drain()          
                     writer.write(str.encode(json.dumps(templist)))
                 else:
                     file = request[1]
                     if file == "/":
-                        file = "/index.html"
-
-                    file = "/web" + file 
+                        file = "/web/index.html"
+                    else:
+                        file = "/web" + file 
                     try:
                         with open(file, "r") as fd:
                             writer.write(b'HTTP/1.0 200 OK\r\nContent-type: text/html\r\n\r\n')
                             writer.write(fd.read().encode())
                     except:
-                        writer.write(b'HTTP/1.0 404 Not Found\r\n')
+                        writer.write(b'HTTP/1.0 404 Not Found\r\n\r\n')
             else: # client
                 bytes = str.encode(json.dumps(templist))
                 writer.write(bytes)
@@ -150,7 +146,7 @@ async def main(host='0.0.0.0', port=65510):
         oldfree = gc.mem_free() / 1024
         gc.collect()
         free = gc.mem_free() / 1024
-        print(f"Alloc: {gc.mem_alloc() / 1024}  Free: {free} {oldfree}")
+        print(f"Alloc: {gc.mem_alloc() / 1024}  Free: {free} ({oldfree})")
         onboard.off()
         await asyncio.sleep(WAIT_LOOP)
 
