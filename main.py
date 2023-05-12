@@ -15,7 +15,7 @@ import micropython
 OLED_MAX_Y = const(31)
 
 WAIT_TEMP = const(360) # 6 mins 
-WAIT_LOOP = const(900) # 15 mins
+WAIT_LOOP = const(300) # 1 mins
 
 led = Pin(15, Pin.OUT)
 onboard = Pin("LED", Pin.OUT, value=0)
@@ -70,8 +70,7 @@ async def readtemp():
         free = gc.mem_free() / 1024
         lt = time.localtime()
         bme.read_compensated_data(result)
-        data = [time.mktime(lt)]
-        data.extend([round(result[0], 2), round(result[1], 1), round(result[2], 1), round(free, 1)])
+        data = [time.mktime(lt), round(result[0], 2), round(result[1], 1), round(result[2], 1), round(free, 1)]
         templist.append(data)
         tempDisplay.env_data(result)
         tempDisplay.updateGraphs(templist)
@@ -87,49 +86,53 @@ async def update_time():
         tempDisplay.time_date()
         tempDisplay.wlan_update_status()
         await asyncio.sleep(60 - sec)
-
+        
+        
+@micropython.native
 async def temp_server(reader: StreamReader, writer: StreamWriter):
     try:
-        json_request = False
         request_line = await reader.readline()
-        print(request_line)
-        request = request_line.decode()
-        request = request.split()
-        print(request)
-        if request[0] == 'GET' and request[2] == 'HTTP/1.1':
-            while True:
-                line = await reader.readline()                
-                if line == b'\r\n':
-                    break
-                
-                header = line.split()
-                if header[0] == b'Accept:' and header[1] == b'application/json':
-                    print("JSON REQUEST")
-                    json_request = True
-                    
-            if json_request: 
-                writer.write(b'HTTP/1.0 200 OK\r\n')
-                writer.write(b'Content-type: application/json\r\n')
-                writer.write(b'Access-Control-Allow-Origin: *\r\n')
-                writer.write(b'\r\n')
-            
-                writer.write(str.encode(json.dumps(templist)))
-            else:
-                file = request[1]
-                if file == "/":
-                    file = "/index.html"
+        lt = time.localtime()
+        print(f"Request: {request_line} - {lt[3]:02}:{lt[4]:02}:{lt[5]:02} {reader.get_extra_info('peername')}")
+        if len(request_line) == 0:
+            pass
+        else:
+            request = request_line.decode()
+            request = request.split()
+            if request[0] == 'GET' and request[2] == 'HTTP/1.1':
+                json_request = False;
+                while True:
+                    line = await reader.readline()
+                    if line == b'\r\n':
+                        break
 
-                file = "/web" + file 
-                try:
-                    with open(file, "r") as fd:
-                        writer.write(b'HTTP/1.0 200 OK\r\nContent-type: text/html\r\n\r\n')
-                        writer.write(fd.read().encode())
-                except:
-                    writer.write(b'HTTP/1.0 404 Not Found\r\n')
-        else: # client
-            bytes = str.encode(json.dumps(templist))
-            writer.write(bytes)
-            writer.write(b'\n')
+                    if line == b'Accept: application/json\r\n':
+                        print("JSON REQUEST")
+                        json_request = True
+                        
+                if json_request: 
+                    writer.write(b'HTTP/1.0 200 OK\r\n')
+                    writer.write(b'Content-type: application/json\r\n')
+                    writer.write(b'Access-Control-Allow-Origin: *\r\n')
+                    writer.write(b'\r\n')
+                
+                    writer.write(str.encode(json.dumps(templist)))
+                else:
+                    file = request[1]
+                    if file == "/":
+                        file = "/index.html"
+
+                    file = "/web" + file 
+                    try:
+                        with open(file, "r") as fd:
+                            writer.write(b'HTTP/1.0 200 OK\r\nContent-type: text/html\r\n\r\n')
+                            writer.write(fd.read().encode())
+                    except:
+                        writer.write(b'HTTP/1.0 404 Not Found\r\n')
+            else: # client
+                bytes = str.encode(json.dumps(templist))
+                writer.write(bytes)
+                writer.write(b'\n')
 
         await writer.drain()
         writer.close()
@@ -144,12 +147,10 @@ async def main(host='0.0.0.0', port=65510):
     while True:
         onboard.on()
         await asyncio.sleep(0.25)
-        free = gc.mem_free() / 1024
-        # if free < 80:
+        oldfree = gc.mem_free() / 1024
         gc.collect()
         free = gc.mem_free() / 1024
-        print(f"Alloc: {gc.mem_alloc() / 1024}  Free: {free}*")
-
+        print(f"Alloc: {gc.mem_alloc() / 1024}  Free: {free} {oldfree}")
         onboard.off()
         await asyncio.sleep(WAIT_LOOP)
 
