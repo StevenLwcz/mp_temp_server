@@ -72,6 +72,27 @@ def graph_scale(min, max):
         return 0.1
     return 10 / diff
 
+# 24 pixels
+def graph_scale_24(min, max):
+    diff = max - min
+    if diff <= 1:
+        return 24
+    if diff <= 2:
+        return 12
+    if diff <= 3:
+        return 8:
+    if diff <= 6:
+        return 4;
+    if diff <= 8:
+        return 3;
+    if diff <= 12:
+        return 2
+    if diff <= 24:
+        return 1
+    if diff <= 48:
+        return 0.5
+    return 24 / diff
+
 class Graph(object): 
 
     # assume height of 10 pixels, x = left, y = bottom left, w width
