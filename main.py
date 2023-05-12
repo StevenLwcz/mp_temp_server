@@ -111,7 +111,7 @@ async def temp_server(reader: StreamReader, writer: StreamWriter):
                 if json_request: 
                     writer.write(b'HTTP/1.0 200 OK\r\nContent-type: application/json\r\n')
                     writer.write(b'Access-Control-Allow-Origin: *\r\n\r\n')
-                    await writer.drain()          
+                    await writer.drain()
                     writer.write(str.encode(json.dumps(templist)))
                 else:
                     file = request[1]
@@ -122,6 +122,7 @@ async def temp_server(reader: StreamReader, writer: StreamWriter):
                     try:
                         with open(file, "r") as fd:
                             writer.write(b'HTTP/1.0 200 OK\r\nContent-type: text/html\r\n\r\n')
+                            await writer.drain()          
                             writer.write(fd.read().encode())
                     except:
                         writer.write(b'HTTP/1.0 404 Not Found\r\n\r\n')
@@ -143,10 +144,10 @@ async def main(host='0.0.0.0', port=65510):
     while True:
         onboard.on()
         await asyncio.sleep(0.25)
-        oldfree = gc.mem_free() / 1024
+        prevfree = gc.mem_free() / 1024
         gc.collect()
         free = gc.mem_free() / 1024
-        print(f"Alloc: {gc.mem_alloc() / 1024}  Free: {free} ({oldfree})")
+        print(f"Alloc: {gc.mem_alloc() / 1024}  Free: {free} ({prevfree})")
         onboard.off()
         await asyncio.sleep(WAIT_LOOP)
 
