@@ -24,18 +24,15 @@ I2C 0 is used with SDA connected to GPIO pin 0 and SCL connected to GPIO 1.
  
 ### To Use
 
-1 Create a wlanc.py
-
+1. Create a wlanc.py
+```python
     password = "Your WLAN password"
     ssid = "your SSID"
+```
+2. Upload wlanc.py main.py and TempDisplay.py as well as the above two Python files to your Pico W using Thonny
+3. Create a sub folder called web on the Pico W file system (using Thonny) and upload index.html and graph.js to it
 
-
-    Don't put your wlanc.py on github or anywhere on the internet. The .gitignore already has an entry for wlanc.py.
-
-2 Upload wlanc.py main.py and TempDisplay.py as well as the above two Python files to your Pico W using Thonny
-
-3 Create a sub folder called web on the Pico W file system (using Thonny) and upload index.html and graph.js to it
-
+Don't put your wlanc.py on github or anywhere on the internet. The .gitignore already has an entry for wlanc.py.
 I assume you are already familaur with the basic of using a Pico W. See Raspberry Pi Pico Docs for more info if needed.
 
 #### TODO
