@@ -3,11 +3,11 @@
 The Pico W collects the sensor data from a BME280 environment sensor every 6 minutes. It updates a
 SSD3106 120x32 OLED display with time and data and small graphs of the last 48/24 readings.
 
-(OLED Display)[images/OLED.png]
+![OLED Display](images/OLED.png "OLED Display")
 
 The Pico W also serves as a simple web server sending to a web browser a page which will show all the data for the last 24 hours in graph format.
 
-(Web Page)[images/graphs.png]
+![Environment Graphs](images/graphs.png "Environment Graphs")
 
 There are many ways to access the data on the Pico W.
 
@@ -30,6 +30,7 @@ There are many ways to access the data on the Pico W.
 Don't put your wlanc.py on github or anywhere on the internet. The .gitignore already has an entry for wlanc.py.
 
 2 Upload wlanc.py main.py and TempDisplay.py as well as the above two Python files to your Pico W using Thonny
+
 3 Create a sub folder called web on the Pico W file system (using Thonny) and upload index.html and graph.js to it
 
 I assume you are already familaur with the basic of using a Pico W. See Raspberry Pi Pico Docs for more info if needed.
