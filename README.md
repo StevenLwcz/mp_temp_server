@@ -29,6 +29,7 @@ I2C 0 is used with SDA connected to GPIO pin 0 and SCL connected to GPIO 1.
     password = "Your WLAN password"
     ssid = "your SSID"
 
+
     Don't put your wlanc.py on github or anywhere on the internet. The .gitignore already has an entry for wlanc.py.
 
 2 Upload wlanc.py main.py and TempDisplay.py as well as the above two Python files to your Pico W using Thonny
@@ -38,6 +39,6 @@ I2C 0 is used with SDA connected to GPIO pin 0 and SCL connected to GPIO 1.
 I assume you are already familaur with the basic of using a Pico W. See Raspberry Pi Pico Docs for more info if needed.
 
 #### TODO
-1 Add a button to the breadboard to allow different formats of display on the OLED.
-2 Tidy up the index.html to show the stats in a better format.
-3 Many code tidy ups and improvements still in progress.
+1. Add a button to the breadboard to allow different formats of display on the OLED.
+2. Tidy up the index.html to show the stats in a better format.
+3. Many code tidy ups and improvements still in progress.
