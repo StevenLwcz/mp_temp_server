@@ -3,7 +3,7 @@
 The Pico W collects the sensor data from a BME280 environment sensor every 6 minutes. It updates a
 SSD3106 120x32 OLED display with time and data and small graphs of the last 48/24 readings.
 
-![OLED Display](images/OLED.png "OLED Display")
+![OLED Display](images/OLED.jpg "OLED Display")
 
 The Pico W also serves as a simple web server sending to a web browser a page which will show all the data for the last 24 hours in graph format.
 
