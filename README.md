@@ -1,11 +1,12 @@
 ### Using Micropython and a Pico W to build a simple temperature server
 
 The Pico W collects the sensor data from a BME280 environment sensor every 6 minutes. It updates a
-SSD3106 120x32 OLED display with time and data and small graphs of the last 48/24 readings.
+SSD3106 120x32 OLED display with time and sensor data and displays small graphs of the last 48/24 readings.
+
 
 ![OLED Display](images/OLED.jpg "OLED Display")
 
-The Pico W also serves as a simple web server sending to a web browser a page which will show all the data for the last 24 hours in graph format.
+The Pico W also serves as a simple web server sending to a web browser a page which will show all the data for the last 24 hours in graph format and update every 6 minutes.
 
 ![Environment Graphs](images/graphs.png "Environment Graphs")
 
@@ -13,7 +14,7 @@ There are many ways to access the data on the Pico W.
 
 1. Python client which will download the data in JSON (client.py).
 2. Rust client which will download the data in JSON (src/main.rs).
-3. Use a web browser to view the page. http://ip-address:65510. The page contains Java script which will send a XHR request every 6 mins to collect the data and update the graphs.
+3. Use a web browser to view the page. http://ip-address:65510. The page uses Java script which will send a XHR request every 6 mins to collect new data and update the graphs.
 
 ### Used By This Project:
 
