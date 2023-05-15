@@ -4,32 +4,44 @@ use std::io::{BufRead, BufReader, Write};
 use std::net::TcpStream;
 use std::str;
 
-#[derive(Debug, Deserialize, Serialize, Clone)]
-struct Data(u32, f32, f32, f32, f32); // time, temp, press, humidity, free
+#[derive(Debug, Deserialize, Serialize, Clone, PartialEq, PartialOrd)]
+struct Temp(f32);
+#[derive(Debug, Deserialize, Serialize, Clone, PartialEq, PartialOrd)]
+struct Pres(f32);
+#[derive(Debug, Deserialize, Serialize, Clone, PartialEq, PartialOrd)]
+struct Humi(f32);
+#[derive(Debug, Deserialize, Serialize, Clone, PartialEq, PartialOrd)]
+struct Free(f32);
 
-impl Data {
-    fn get_temprature(&self) -> f32 {
-        self.1
-    }
 
-    fn _get_pressure(&self) -> f32 {
-        self.2
-    }
+impl Eq for Temp{}
+impl Eq for Pres{}
+impl Eq for Humi{}
+impl Eq for Free{}
 
-    fn min(data: &[Data], f: fn(&Data) -> f32) -> Data {
-        data.iter()
-            .reduce(|a, b| if f(a) < f(b) { a } else { b })
-            .unwrap_or(&Data(0, f32::MAX, f32::MAX, f32::MAX, f32::MAX))
-            .clone()
-    }
-
-    fn max(data: &[Data], f: fn(&Data) -> f32) -> Data {
-        data.iter()
-            .reduce(|a, b| if f(a) > f(b) { a } else { b })
-            .unwrap_or(&Data(0, f32::MIN, f32::MIN, f32::MIN, f32::MIN))
-            .clone()
+impl Ord for Temp{
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.0.total_cmp(&other.0)
     }
 }
+impl Ord for Pres{
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.0.total_cmp(&other.0)
+    }
+}
+impl Ord for Humi{
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.0.total_cmp(&other.0)
+    }
+}
+impl Ord for Free{
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.0.total_cmp(&other.0)
+    }
+}
+
+#[derive(Debug, Deserialize, Serialize, Clone)]
+struct Data(u32, Temp, Pres, Humi, Free); 
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -58,11 +70,11 @@ fn main() {
     // println!("{}", str1);
 
     let server_data: Vec<Data> = serde_json::from_str(str1).unwrap();
-    println!("{:?}", server_data);
+    // println!("{:?}", server_data);
 
-    let tn = Data::min(&server_data, Data::get_temprature);
-    println!("min: {}", tn.get_temprature());
+    let tn = server_data.iter().min_by_key(|d| &d.1).unwrap();
+    println!("min: {:?}", tn.1);
+    let tx = server_data.iter().max_by_key(|d| &d.1).unwrap();
+    println!("max: {:?}", tx.1);
 
-    let tx = Data::max(&server_data, Data::get_temprature);
-    println!("max: {}", tx.get_temprature());
 }
