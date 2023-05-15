@@ -13,7 +13,6 @@ struct Humi(f32);
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq, PartialOrd)]
 struct Free(f32);
 
-
 impl Eq for Temp{}
 impl Eq for Pres{}
 impl Eq for Humi{}
@@ -77,4 +76,18 @@ fn main() {
     let tx = server_data.iter().max_by_key(|d| &d.1).unwrap();
     println!("max: {:?}", tx.1);
 
+    let pn = server_data.iter().min_by_key(|d| &d.2).unwrap();
+    println!("min: {:?}", pn.2);
+    let px = server_data.iter().max_by_key(|d| &d.2).unwrap();
+    println!("max: {:?}", px.2);
+
+    let hn = server_data.iter().min_by_key(|d| &d.3).unwrap();
+    println!("min: {:?}", hn.3);
+    let hx = server_data.iter().max_by_key(|d| &d.3).unwrap();
+    println!("max: {:?}", hx.3);
+
+    let mn = server_data.iter().min_by_key(|d| &d.4).unwrap();
+    println!("min: {:?}", mn.4);
+    let mx = server_data.iter().max_by_key(|d| &d.4).unwrap();
+    println!("max: {:?}", mx.4);
 }
