@@ -15,7 +15,7 @@ import micropython
 OLED_MAX_Y = const(31)
 
 WAIT_TEMP = const(360) # 6 mins 
-WAIT_LOOP = const(300) # 1 mins
+WAIT_LOOP = const(400) # 1 mins
 
 led = Pin(15, Pin.OUT)
 onboard = Pin("LED", Pin.OUT, value=0)
@@ -61,6 +61,7 @@ print(bme.values)
 templist = []
 tempDisplay.initGraphs()
 
+@micropython.native
 async def readtemp():
     while True:
         result = [None, None, None]
@@ -100,6 +101,7 @@ async def temp_server(reader: StreamReader, writer: StreamWriter):
             request = request.split()
             if request[0] == 'GET' and request[2] == 'HTTP/1.1':
                 json_request = False;
+              
                 while True:
                     line = await reader.readline()
                     if json_request == False and line == b'Accept: application/json\r\n':
@@ -112,7 +114,7 @@ async def temp_server(reader: StreamReader, writer: StreamWriter):
                     writer.write(b'HTTP/1.0 200 OK\r\nContent-type: application/json\r\n')
                     writer.write(b'Access-Control-Allow-Origin: *\r\n\r\n')
                     await writer.drain()
-                    writer.write(str.encode(json.dumps(templist)))
+                    writer.write(str.encode(json.dumps(templist, separators=(',',':'))))    
                 else:
                     file = request[1]
                     if file == "/":
@@ -127,8 +129,7 @@ async def temp_server(reader: StreamReader, writer: StreamWriter):
                     except:
                         writer.write(b'HTTP/1.0 404 Not Found\r\n\r\n')
             else: # client
-                bytes = str.encode(json.dumps(templist))
-                writer.write(bytes)
+                writer.write(str.encode(json.dumps(templist, separators=(',',':')))) 
                 writer.write(b'\n')
 
         await writer.drain()
@@ -137,6 +138,7 @@ async def temp_server(reader: StreamReader, writer: StreamWriter):
     except asyncio.CancelledError:
         print('Connection dropped!')
     
+@micropython.native
 async def main(host='0.0.0.0', port=65510):
     asyncio.create_task(asyncio.start_server(temp_server, host, port))
     asyncio.create_task(readtemp())
