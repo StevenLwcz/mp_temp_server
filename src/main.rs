@@ -1,3 +1,6 @@
+use chrono::{NaiveDateTime, DateTime, Utc};
+use std::fmt;
+
 use serde::{Deserialize, Serialize};
 use std::env;
 use std::io::{BufRead, BufReader, Write};
@@ -23,9 +26,19 @@ impl Ord for Temp{
         self.0.total_cmp(&other.0)
     }
 }
+impl fmt::Display for Temp {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{:.2}\u{2103}", self.0)
+    }
+}
 impl Ord for Pres{
     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
         self.0.total_cmp(&other.0)
+    }
+}
+impl fmt::Display for Pres {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}\u{3371}", self.0)
     }
 }
 impl Ord for Humi{
@@ -33,14 +46,39 @@ impl Ord for Humi{
         self.0.total_cmp(&other.0)
     }
 }
+
+impl fmt::Display for Humi {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{:.1}\u{fe6a}", self.0)
+    }
+}
+
 impl Ord for Free{
     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
         self.0.total_cmp(&other.0)
     }
 }
 
+impl fmt::Display for Free {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{:.1}\u{3385}", self.0)
+    }
+}
+
 #[derive(Debug, Deserialize, Serialize, Clone)]
-struct Data(u32, Temp, Pres, Humi, Free); 
+struct Time(i64);
+
+impl fmt::Display for Time {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let naive = NaiveDateTime::from_timestamp_opt(self.0 , 0).unwrap();
+        let datetime: DateTime<Utc> = DateTime::from_utc(naive, Utc);
+        let newdate = datetime.format("%H:%M:%S %d/%m/%Y");
+        write!(f, "{}", newdate)
+    }
+}
+
+#[derive(Debug, Deserialize, Serialize, Clone)]
+struct Data(Time, Temp, Pres, Humi, Free); 
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -90,4 +128,10 @@ fn main() {
     println!("min: {:?}", mn.4);
     let mx = server_data.iter().max_by_key(|d| &d.4).unwrap();
     println!("max: {:?}", mx.4);
+
+    println!("{}", tx.0);
+    println!("{}", tn.0);
+    for data in server_data {
+        println!("{}, {}, {}, {}, {}", data.0, data.1, data.2, data.3, data.4)
+    }
 }
